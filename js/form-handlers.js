@@ -84,6 +84,7 @@ const handleUpdateStock = async (form) => {
     if (success) {
         try {
             await addTransactionToChain(transaction);
+            destroyCurrentCharts();
             renderProductDetail(itemSku);
             showSuccess(`Stock for ${itemSku} updated!`);
         
@@ -124,6 +125,7 @@ const handleMoveStock = async (form) => {
     if (processTransaction(transaction, false, showError)) {
         try {
             await addTransactionToChain(transaction);
+            destroyCurrentCharts();
             renderProductDetail(itemSku);
             showSuccess(`Moved ${quantity} units of ${itemSku}.`);
         
