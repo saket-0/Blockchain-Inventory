@@ -1,109 +1,3 @@
-// Lap/js/view-renderer.js
-// const API_BASE_URL = 'http://127.0.0.1:3000'; // <-- THIS LINE IS ADDED
-
-// --- View Rendering Functions ---
-
-// const renderDashboard = () => {
-//     const appContent = document.getElementById('app-content');
-//     if (!appContent) return;
-
-//     let totalUnits = 0;
-//     let totalValue = 0;
-//     inventory.forEach(product => {
-//         let totalStock = 0;
-//         product.locations.forEach(qty => totalStock += qty);
-//         totalUnits += totalStock;
-//         totalValue += (product.price || 0) * totalStock;
-//     });
-
-//     appContent.querySelector('#kpi-total-value').textContent = `₹${totalValue.toFixed(2)}`;
-//     appContent.querySelector('#kpi-total-units').textContent = totalUnits;
-//     appContent.querySelector('#kpi-transactions').textContent = blockchain.length;
-    
-//     appContent.querySelector('#clear-db-button').style.display = permissionService.can('CLEAR_DB') ? 'flex' : 'none';
-//     appContent.querySelector('#verify-chain-button').style.display = permissionService.can('VERIFY_CHAIN') ? 'flex' : 'none';
-    
-//     const activityContainer = appContent.querySelector('#recent-activity-container');
-//     if (activityContainer && permissionService.can('VIEW_LEDGER')) {
-//         const activityList = appContent.querySelector('#recent-activity-list');
-//         const emptyMessage = appContent.querySelector('#recent-activity-empty');
-//         const viewLedgerLink = appContent.querySelector('#dashboard-view-ledger');
-
-//         viewLedgerLink.style.display = 'block';
-//         activityList.innerHTML = '';
-
-//         const recentBlocks = [...blockchain]
-//             .reverse()
-//             .filter(block => block.transaction.txType !== 'GENESIS')
-//             .slice(0, 5);
-
-//         if (recentBlocks.length === 0) {
-//             emptyMessage.style.display = 'block';
-//         } else {
-//             emptyMessage.style.display = 'none';
-//             recentBlocks.forEach(block => {
-//                 activityList.appendChild(createLedgerBlockElement(block));
-//             });
-//         }
-//     } else if (activityContainer) {
-//         activityContainer.style.display = 'none';
-//     }
-
-//     const lowStockContainer = appContent.querySelector('#low-stock-container');
-//     if (lowStockContainer && permissionService.can('VIEW_PRODUCTS')) {
-//         const lowStockList = appContent.querySelector('#low-stock-list');
-//         const emptyMessage = appContent.querySelector('#low-stock-empty');
-//         const thresholdLabel = appContent.querySelector('#low-stock-threshold-label');
-        
-//         lowStockList.innerHTML = '';
-//         const LOW_STOCK_THRESHOLD = 20;
-//         thresholdLabel.textContent = `(Threshold: ${LOW_STOCK_THRESHOLD} units)`;
-        
-//         const lowStockProducts = [];
-//         inventory.forEach((product, productId) => {
-//             let totalStock = 0;
-//             product.locations.forEach(qty => totalStock += qty);
-            
-//             if (totalStock > 0 && totalStock <= LOW_STOCK_THRESHOLD) {
-//                 lowStockProducts.push({
-//                     id: productId,
-//                     name: product.productName,
-//                     stock: totalStock
-//                 });
-//             }
-//         });
-
-//         if (lowStockProducts.length === 0) {
-//             emptyMessage.style.display = 'block';
-//         } else {
-//             emptyMessage.style.display = 'none';
-//             lowStockProducts
-//                 .sort((a, b) => a.stock - b.stock)
-//                 .forEach(product => {
-//                     const itemElement = document.createElement('div');
-//                     itemElement.className = 'low-stock-item p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer';
-//                     itemElement.dataset.productId = product.id;
-//                     itemElement.innerHTML = `
-//                         <div class="flex justify-between items-center">
-//                             <div>
-//                                 <p class="font-semibold text-indigo-700">${product.name}</p>
-//                                 <p class="text-xs text-slate-500">${product.id}</p>
-//                             </div>
-//                             <span class="text-lg font-bold text-red-600">${product.stock} units</span>
-//                         </div>
-//                     `;
-//                     lowStockList.appendChild(itemElement);
-//                 });
-//         }
-//     } else if (lowStockContainer) {
-//         lowStockContainer.style.display = 'none';
-//     }
-// };
-
-// Lap/js/view-renderer.js
-
-// ... (keep all other functions as-is)
-
 // --- View Rendering Functions ---
 
 const renderDashboard = async () => {
@@ -221,6 +115,15 @@ const renderProductList = () => {
     productGrid.innerHTML = ''; 
     
     appContent.querySelector('#add-item-container').style.display = permissionService.can('CREATE_ITEM') ? 'block' : 'none';
+    
+    // --- ADD THIS SECTION ---
+    // Populate the "Add Product" form dropdowns
+    const addForm = appContent.querySelector('#add-item-form');
+    if (addForm) {
+        populateLocationDropdown(addForm.querySelector('#add-to'));
+        populateCategoryDropdown(addForm.querySelector('#add-product-category'));
+    }
+    // --- END ADD ---
 
     let productsFound = 0;
 
@@ -284,19 +187,51 @@ const renderProductDetail = (productId) => {
     appContent.querySelector('#detail-product-price').textContent = `₹${price.toFixed(2)}`;
     appContent.querySelector('#detail-product-category').textContent = product.category || 'Uncategorized';
 
+    // --- ADD THIS SECTION ---
+    // Populate the three dropdowns on this page
+    populateLocationDropdown(appContent.querySelector('#update-location'));
+    populateLocationDropdown(appContent.querySelector('#move-from-location'));
+    populateLocationDropdown(appContent.querySelector('#move-to-location'));
+    // --- END ADD ---
 
+    
     const stockLevelsDiv = appContent.querySelector('#detail-stock-levels');
     stockLevelsDiv.innerHTML = '';
     let totalStock = 0;
-    ["Supplier", "Warehouse", "Retailer"].forEach(location => {
+
+    // ["Supplier", "Warehouse", "Retailer"].forEach(location => {
+    //     const qty = product.locations.get(location) || 0;
+    //     totalStock += qty;
+    //     stockLevelsDiv.innerHTML += `
+    //         <div class="flex justify-between items-center text-sm">
+    //             <span class="text-slate-600">${location}:</span>
+    //             <span class="font-medium text-slate-800">${qty} units</span>
+    //         </div>`;
+    // });
+
+
+    // --- REPLACE THE HARD-CODED ["Supplier", "Warehouse", "Retailer"] ---
+    const allProductLocations = new Set(globalLocations.map(l => l.name));
+    product.locations.forEach((qty, loc) => allProductLocations.add(loc));
+
+    allProductLocations.forEach(location => {
         const qty = product.locations.get(location) || 0;
         totalStock += qty;
-        stockLevelsDiv.innerHTML += `
-            <div class="flex justify-between items-center text-sm">
-                <span class="text-slate-600">${location}:</span>
-                <span class="font-medium text-slate-800">${qty} units</span>
-            </div>`;
+
+        const locData = globalLocations.find(l => l.name === location);
+        const isArchived = locData ? locData.is_archived : false;
+
+        // Only show if it has stock, or if it's a known, non-archived location
+        if (qty > 0 || (locData && !isArchived)) {
+            stockLevelsDiv.innerHTML += `
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-600">${location}:</span>
+                    <span class="font-medium text-slate-800">${qty} units</span>
+                </div>`;
+        }
     });
+    // --- END REPLACEMENT ---
+
     appContent.querySelector('#detail-total-stock').textContent = `${totalStock} units`;
     
     appContent.querySelector('#update-stock-container').style.display = permissionService.can('UPDATE_STOCK') ? 'block' : 'none';
@@ -394,6 +329,10 @@ const renderAdminPanel = async () => {
         showError(error.message);
         tableBody.innerHTML = `<tr><td colspan="4" class="table-cell text-center text-red-600">Error loading users.</td></tr>`;
     }
+
+    // --- ADD THIS AT THE END OF THE FUNCTION ---
+    await renderLocationManagement();
+    await renderCategoryManagement();
 };
 
 const renderSnapshotView = (snapshotData) => {
@@ -439,5 +378,47 @@ const renderSnapshotView = (snapshotData) => {
             </div>
         `;
         productGrid.appendChild(productCard);
+    });
+};
+
+
+// --- ADD THESE TWO NEW FUNCTIONS ---
+const renderLocationManagement = async () => {
+    const container = document.getElementById('location-list-container');
+    if (!container) return;
+    container.innerHTML = '<p class="text-sm text-slate-500">Loading...</p>';
+    await fetchLocations(); // Re-fetch to get admin-only view
+    container.innerHTML = '';
+
+    globalLocations.forEach(loc => {
+        const item = document.createElement('div');
+        item.className = `flex items-center gap-2 ${loc.is_archived ? 'opacity-50' : ''}`;
+        item.innerHTML = `
+            <input type="text" class="location-name-input flex-1 form-input-underline" data-id="${loc.id}" value="${loc.name}" ${loc.is_archived ? 'disabled' : ''}>
+            <button class="location-archive-button text-red-600 hover:text-red-800 disabled:text-slate-400" data-id="${loc.id}" data-name="${loc.name}" ${loc.is_archived ? 'disabled' : ''}>
+                <i class="ph-bold ph-trash"></i>
+            </button>
+        `;
+        container.appendChild(item);
+    });
+};
+
+const renderCategoryManagement = async () => {
+    const container = document.getElementById('category-list-container');
+    if (!container) return;
+    container.innerHTML = '<p class="text-sm text-slate-500">Loading...</p>';
+    await fetchCategories(); // Re-fetch
+    container.innerHTML = '';
+
+    globalCategories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = `flex items-center gap-2 ${cat.is_archived ? 'opacity-50' : ''}`;
+        item.innerHTML = `
+            <input type="text" class="category-name-input flex-1 form-input-underline" data-id="${cat.id}" value="${cat.name}" ${cat.is_archived ? 'disabled' : ''}>
+            <button class="category-archive-button text-red-600 hover:text-red-800 disabled:text-slate-400" data-id="${cat.id}" data-name="${cat.name}" ${cat.is_archived ? 'disabled' : ''}>
+                <i class="ph-bold ph-trash"></i>
+            </button>
+        `;
+        container.appendChild(item);
     });
 };

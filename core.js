@@ -4,9 +4,41 @@
 let blockchain = [];
 let inventory = new Map(); // The "World State"
 let currentUser = null;
+let globalLocations = []; // <-- ADD THIS
+let globalCategories = []; // <-- ADD THIS
 
 // Define the base URL for your backend server
 // const API_BASE_URL = 'http://127.0.0.1:3000';
+
+
+
+// --- ADD THESE TWO NEW FUNCTIONS ---
+const fetchLocations = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/locations`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch locations');
+        globalLocations = await response.json();
+    } catch (e) {
+        console.error(e);
+        globalLocations = [{ name: "Supplier" }, { name: "Warehouse" }, { name: "Retailer" }];
+        showError('Could not load dynamic locations.');
+    }
+};
+
+const fetchCategories = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        globalCategories = await response.json();
+    } catch (e) {
+        console.error(e);
+        globalCategories = [{ name: "Electronics" }, { name: "Uncategorized" }];
+        showError('Could not load dynamic categories.');
+    }
+};
+// --- END NEW FUNCTIONS ---
+
+
 
 // --- SERVICES (Simulating Backend Logic) ---
 
@@ -31,6 +63,8 @@ const authService = {
             }
             
             currentUser = await response.json(); // Server sends back the user object
+            await fetchLocations(); // <-- ADD
+            await fetchCategories(); // <-- ADD
             await showAppCallback(); // User is logged in, show the app
         
         } catch (error) {
@@ -58,6 +92,8 @@ const authService = {
             }
 
             currentUser = data.user; // Backend sends back the user object
+            await fetchLocations(); // <-- ADD
+            await fetchCategories(); // <-- ADD
             await showAppCallback(); // Show the app
 
         } catch (error) {

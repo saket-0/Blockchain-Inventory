@@ -269,3 +269,92 @@ const handleSnapshotForm = async (form, navigateTo) => {
         button.innerHTML = '<i class="ph-bold ph-timer"></i> Generate Snapshot';
     }
 };
+
+// Lap/js/form-handlers.js
+// ... (at the end of the file)
+
+// --- LOCATION HANDLERS ---
+const handleAddLocation = async (form) => {
+    const nameInput = form.querySelector('#add-location-name');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/locations`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ name: nameInput.value })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        showSuccess(`Location "${data.name}" added.`);
+        nameInput.value = '';
+        await fetchLocations(); 
+        await renderAdminPanel();
+    } catch (error) { showError(error.message); }
+};
+
+const handleRenameLocation = async (id, newName) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/locations/${id}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ name: newName })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        showSuccess(`Location renamed to "${data.name}".`);
+        await fetchLocations();
+    } catch (error) { showError(error.message); renderAdminPanel(); }
+};
+
+const handleArchiveLocation = async (id, name) => {
+    if (!confirm(`Archive "${name}"? This hides it from new transactions.`)) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/locations/${id}`, {
+            method: 'DELETE', credentials: 'include'
+        });
+        if (!response.ok) throw new Error((await response.json()).message);
+        showSuccess(`Location "${name}" archived.`);
+        await fetchLocations();
+        await renderAdminPanel();
+    } catch (error) { showError(error.message); }
+};
+
+// --- CATEGORY HANDLERS ---
+const handleAddCategory = async (form) => {
+    const nameInput = form.querySelector('#add-category-name');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ name: nameInput.value })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        showSuccess(`Category "${data.name}" added.`);
+        nameInput.value = '';
+        await fetchCategories();
+        await renderAdminPanel();
+    } catch (error) { showError(error.message); }
+};
+
+const handleRenameCategory = async (id, newName) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ name: newName })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        showSuccess(`Category renamed to "${data.name}".`);
+        await fetchCategories();
+    } catch (error) { showError(error.message); renderAdminPanel(); }
+};
+
+const handleArchiveCategory = async (id, name) => {
+    if (!confirm(`Archive "${name}"? This hides it from new transactions.`)) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+            method: 'DELETE', credentials: 'include'
+        });
+        if (!response.ok) throw new Error((await response.json()).message);
+        showSuccess(`Category "${name}" archived.`);
+        await fetchCategories();
+        await renderAdminPanel();
+    } catch (error) { showError(error.message); }
+};

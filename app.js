@@ -180,6 +180,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.target.id === 'snapshot-form') {
             await handleSnapshotForm(e.target, navigateTo);
         }
+
+        if (e.target.id === 'add-location-form') {
+        await handleAddLocation(e.target);
+        }
+        if (e.target.id === 'add-category-form') {
+            await handleAddCategory(e.target);
+        }
     });
 
     appContent.addEventListener('input', (e) => {
@@ -224,12 +231,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.target.closest('#verify-chain-button')) {
             await handleVerifyChain();
         }
+
+        // --- ADD THESE ---
+        const locArchive = e.target.closest('.location-archive-button');
+        if (locArchive) {
+            await handleArchiveLocation(locArchive.dataset.id, locArchive.dataset.name);
+        }
+        const catArchive = e.target.closest('.category-archive-button');
+        if (catArchive) {
+            await handleArchiveCategory(catArchive.dataset.id, catArchive.dataset.name);
+        }
     });
 
     appContent.addEventListener('change', async (e) => {
         if (e.target.classList.contains('role-select')) {
             await handleRoleChange(e.target.dataset.userId, e.target.value);
         }
+
+        // --- ADD THESE ---
+        // We use 'change' (on blur) for performance
+        if (e.target.classList.contains('location-name-input')) {
+            await handleRenameLocation(e.target.dataset.id, e.target.value);
+        }
+        if (e.target.classList.contains('category-name-input')) {
+            await handleRenameCategory(e.target.dataset.id, e.target.value);
+        }
+
     });
 
     // --- INITIALIZATION ---

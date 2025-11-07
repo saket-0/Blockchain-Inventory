@@ -125,3 +125,56 @@ const populateLoginDropdown = async () => {
         loginEmailInput.placeholder = 'Error loading users';
     }
 };
+
+// Lap/js/ui-utils.js
+// ... (at the end of the file)
+
+const populateLocationDropdown = (selectElement) => {
+    if (!selectElement) return;
+    const currentValue = selectElement.value;
+    selectElement.innerHTML = '';
+    
+    const locationsToShow = globalLocations.filter(loc => !loc.is_archived);
+    if (locationsToShow.length === 0) {
+        selectElement.innerHTML = '<option value="">No locations.</option>';
+        return;
+    }
+
+    locationsToShow.forEach(loc => {
+        const option = document.createElement('option');
+        option.value = loc.name;
+        option.textContent = loc.name;
+        selectElement.appendChild(option);
+    });
+    
+    if (currentValue && locationsToShow.some(l => l.name === currentValue)) {
+        selectElement.value = currentValue;
+    } else {
+        selectElement.value = locationsToShow[0].name;
+    }
+};
+
+const populateCategoryDropdown = (selectElement) => {
+    if (!selectElement) return;
+    const currentValue = selectElement.value;
+    selectElement.innerHTML = '';
+    
+    const categoriesToShow = globalCategories.filter(cat => !cat.is_archived);
+    if (categoriesToShow.length === 0) {
+        selectElement.innerHTML = '<option value="">No categories.</option>';
+        return;
+    }
+
+    categoriesToShow.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.name;
+        option.textContent = cat.name;
+        selectElement.appendChild(option);
+    });
+    
+    if (currentValue && categoriesToShow.some(c => c.name === currentValue)) {
+        selectElement.value = currentValue;
+    } else {
+        selectElement.value = categoriesToShow[0].name;
+    }
+};
