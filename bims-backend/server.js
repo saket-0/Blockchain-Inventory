@@ -9,6 +9,7 @@ const PgSession = require('connect-pg-simple')(session);
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const blockchainRoutes = require('./routes/blockchain');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const port = 3000;
@@ -89,6 +90,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes(pool));
 app.use('/api/users', userRoutes(pool));
 app.use('/api/blockchain', blockchainRoutes(pool));
+app.use('/api/analytics', analyticsRoutes(pool));
 
 
 // --- 8. Start Server ---
