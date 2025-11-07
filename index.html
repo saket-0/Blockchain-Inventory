@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-900">
 
@@ -78,6 +79,11 @@
                 <li>
                     <a href="#" id="nav-products" class="nav-link">
                         <i class="ph-bold ph-package"></i> Products
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-analytics" class="nav-link">
+                        <i class="ph-bold ph-chart-line"></i> Analytics
                     </a>
                 </li>
                 <li>
@@ -263,6 +269,11 @@
                         </div>
                     </div>
 
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-semibold mb-4 text-slate-800">Verifiable Stock History</h2>
+                        <canvas id="item-stock-chart"></canvas>
+                    </div>
+
                     <div id="update-stock-container" class="bg-white p-6 rounded-lg shadow-md space-y-8">
                         <div>
                             <h2 class="text-2xl font-semibold mb-4 text-slate-800">Update Stock (Add/Remove)</h2>
@@ -426,6 +437,41 @@
                 </form>
             </div>
 
+        </div>
+    </template>
+
+
+    <template id="analytics-view-template">
+        <div class="space-y-8">
+            <h1 class="text-4xl font-bold text-slate-800">Analytics Dashboard</h1>
+            <p class="text-lg text-slate-600">Verifiable business insights from the immutable ledger.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold mb-4 text-slate-800">Transaction Velocity (Last 7 Days)</h2>
+                    <canvas id="tx-velocity-chart"></canvas>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold mb-4 text-slate-800">Transaction Activity by Hour (UTC)</h2>
+                    <canvas id="tx-heatmap-chart"></canvas>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold mb-4 text-slate-800">Inventory Value by Location</h2>
+                    <div class="max-w-xs mx-auto">
+                        <canvas id="inventory-distribution-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                     <h2 class="text-2xl font-semibold mb-4 text-slate-800">Inventory Value by Category</h2>
+                     <div class="max-w-xs mx-auto">
+                        <canvas id="inventory-category-chart"></canvas>
+                     </div>
+                </div>
+            </div>
         </div>
     </template>
 

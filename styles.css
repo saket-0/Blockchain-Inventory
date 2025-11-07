@@ -123,6 +123,22 @@ body {
     white-space: nowrap;
 }
 
+/* *** NEW: Canvas and Chart Styles *** */
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+#tx-velocity-chart,
+#tx-heatmap-chart,
+#item-stock-chart {
+    min-height: 250px;
+}
+#inventory-distribution-chart,
+#inventory-category-chart {
+    min-height: 250px;
+}
+
+
 /* *** NEW: Hide number input spinners *** */
 /* For Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -171,7 +187,7 @@ input[type=number] {
     /* *** MODIFIED: Reduced vertical padding *** */
     padding: 0.25rem 0.1rem;
     background-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%logo%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.5rem center;
     background-repeat: no-repeat;
     background-size: 1.5em 1.5em;
