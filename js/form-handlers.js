@@ -28,8 +28,7 @@ const handleAddItem = async (form) => {
     
     // We add the user from the frontend, but the backend will
     // overwrite this with the verified session user.
-    transaction.userName = currentUser.name;
-    transaction.employeeId = currentUser.employee_id;
+    // --- REDUNDANT FIELDS REMOVED ---
 
     if (processTransaction(transaction, false, showError)) {
         try {
@@ -82,9 +81,8 @@ const handleUpdateStock = async (form) => {
         transaction = { 
             txType: "STOCK_IN", itemSku, quantity, 
             location: locationIn, 
-            beforeQuantity, afterQuantity,
-            userName: currentUser.name, 
-            employeeId: currentUser.employee_id
+            beforeQuantity, afterQuantity
+            // --- REDUNDANT FIELDS REMOVED ---
         };
         success = processTransaction(transaction, false, showError);
 
@@ -96,9 +94,8 @@ const handleUpdateStock = async (form) => {
         transaction = { 
             txType: "STOCK_OUT", itemSku, quantity, 
             location: locationOut, 
-            beforeQuantity, afterQuantity,
-            userName: currentUser.name,
-            employeeId: currentUser.employee_id
+            beforeQuantity, afterQuantity
+            // --- REDUNDANT FIELDS REMOVED ---
         };
         success = processTransaction(transaction, false, showError);
     }
@@ -141,9 +138,8 @@ const handleMoveStock = async (form) => {
         txType: "MOVE", itemSku, quantity,
         fromLocation, toLocation,
         beforeQuantity: { from: beforeFromQty, to: beforeToQty },
-        afterQuantity: { from: beforeFromQty - quantity, to: beforeToQty + quantity },
-        userName: currentUser.name,
-        employeeId: currentUser.employee_id
+        afterQuantity: { from: beforeFromQty - quantity, to: beforeToQty + quantity }
+        // --- REDUNDANT FIELDS REMOVED ---
     };
 
     if (processTransaction(transaction, false, showError)) {

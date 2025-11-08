@@ -3,6 +3,16 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
+/* --- NEW CSS RULE --- */
+/* This makes the <main> content area fill the screen */
+/* and handle all scrolling, stopping the <body> from scrolling. */
+main {
+    height: 100vh;
+    overflow-y: auto;
+}
+/* --- END NEW RULE --- */
+
+
 /* Custom scrollbar for scrollable areas */
 #item-history-display::-webkit-scrollbar,
 #full-ledger-display::-webkit-scrollbar,

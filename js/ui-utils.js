@@ -55,13 +55,14 @@ const createLedgerBlockElement = (block) => {
     const actorHtml = `<li>Actor: <strong>${adminUserName || 'N/A'}</strong></li>`;
     
     // Regular user is for inventory actions (legacy, but keep)
-    const userHtml = `<li>User: <strong>${userName || 'N/A'}</strong> (${employeeId || 'N/A'})</li>`;
+    // --- THIS VARIABLE IS NO LONGER USED ---
+    // const userHtml = `<li>User: <strong>${userName || 'N/A'}</strong> (${employeeId || 'N/A'})</li>`;
 
 
     switch (txType) {
         case 'CREATE_ITEM':
             transactionHtml = `<span class="font-semibold text-green-700">CREATE</span> <strong>${quantity}</strong> of <strong>${itemName}</strong> (${itemSku}) to <strong>${toLocation}</strong>`;
-            detailsHtml = `${userHtml}
+            detailsHtml = `${actorHtml}
                            <li>Price: <strong>₹${(price || 0).toFixed(2)}</strong></li>
                            <li>Category: <strong>${category || 'N/A'}</strong></li>`;
             break;
@@ -69,17 +70,17 @@ const createLedgerBlockElement = (block) => {
             transactionHtml = `<span class="font-semibold text-blue-600">MOVE</span> <strong>${quantity}</strong> of <strong>${itemSku}</strong>`;
             detailsHtml = `<li>From: <strong>${fromLocation}</strong> (Before: ${beforeQuantity.from}, After: ${afterQuantity.from})</li>
                            <li>To: <strong>${toLocation}</strong> (Before: ${beforeQuantity.to}, After: ${afterQuantity.to})</li>
-                           ${userHtml}`;
+                           ${actorHtml}`;
             break;
         case 'STOCK_IN':
             transactionHtml = `<span class="font-semibold text-green-600">STOCK IN</span> <strong>${quantity}</strong> of <strong>${itemSku}</strong> at <strong>${location}</strong>`;
             detailsHtml = `<li>Before: ${beforeQuantity}, After: ${afterQuantity}</li>
-                           ${userHtml}`;
+                           ${actorHtml}`;
             break;
         case 'STOCK_OUT':
             transactionHtml = `<span class="font-semibold text-red-600">STOCK OUT</span> <strong>${quantity}</strong> of <strong>${itemSku}</strong> from <strong>${location}</strong>`;
             detailsHtml = `<li>Before: ${beforeQuantity}, After: ${afterQuantity}</li>
-                           ${userHtml}`;
+                           ${actorHtml}`;
             break;
         
         // *** ADMIN CASES ***
