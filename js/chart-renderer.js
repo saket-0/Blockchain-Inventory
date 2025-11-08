@@ -41,6 +41,12 @@ const renderItemStockChart = (productId) => {
     const ctx = document.getElementById('item-stock-chart')?.getContext('2d');
     if (!ctx) return;
     
+    // *** THEME-AWARE COLOR FIX ***
+    const currentTheme = localStorage.getItem('bims_theme') || 'light';
+    const chartBackgroundColor = currentTheme === 'light' 
+        ? '#eef2ff' // Light indigo (original)
+        : 'rgba(79, 70, 229, 0.2)'; // Dark indigo (transparent)
+
     const stockChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -49,7 +55,7 @@ const renderItemStockChart = (productId) => {
                 label: 'Total Stock',
                 data: dataPoints,
                 borderColor: '#4f46e5',
-                backgroundColor: '#eef2ff',
+                backgroundColor: chartBackgroundColor, // Use theme-aware color
                 fill: true,
                 tension: 0.1,
                 pointRadius: 3,

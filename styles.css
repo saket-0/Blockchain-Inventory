@@ -303,6 +303,9 @@ input[type=number] {
     color: #64748b; /* slate-500 */
 }
 /* Fix for specific colored text */
+.dark .text-indigo-800 {
+    color: #c7d2fe; /* indigo-200 */
+}
 .dark .text-indigo-700 {
     color: #a5b4fc; /* indigo-300 */
 }
@@ -310,7 +313,8 @@ input[type=number] {
     color: #c7d2fe; /* indigo-200 */
 }
 .dark .bg-indigo-100 {
-    background-color: #312e81; /* indigo-900 */
+    background-color: #3730a3; /* indigo-800 */
+    color: #e0e7ff; /* indigo-200 - Fix for date badge */
 }
 .dark .text-green-700 {
     color: #4ade80; /* green-400 */
@@ -341,8 +345,12 @@ input[type=number] {
 .dark .bg-slate-50 {
     background-color: #1e293b; /* slate-800 */
 }
-.dark .text-slate-600.table-header { /* Admin table header */
+/* *** THIS IS THE FIX for Table Header *** */
+.dark .table-header {
     color: #d1d5db; /* slate-300 */
+}
+.dark .table-cell {
+    color: #f8fafc; /* slate-50 */
 }
 .dark .truncate p {
     color: #94a3b8; /* slate-400 */
@@ -363,13 +371,22 @@ input[type=number] {
     /* SVG icon for dark mode */
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
-/* Standard Tailwind forms (login page, etc) */
+/* Standard Tailwind forms (login page, search bar, etc) */
 .dark .border-slate-300 {
     border-color: #334155; /* slate-700 */
 }
+.dark input[type=text],
+.dark input[type=number],
+.dark input[type=email],
+.dark input[type=password],
+.dark select {
+    background-color: #1e293b; /* slate-800 */
+    color: #f8fafc; /* slate-50 */
+}
 .dark .form-input-underline::placeholder,
-.dark input[type=email]::placeholder,
-.dark input[type=text]::placeholder {
+.dark input[type=text]::placeholder,
+.dark input[type=number]::placeholder,
+.dark input[type=email]::placeholder {
     color: #64748b; /* slate-500 */
 }
 
@@ -392,12 +409,16 @@ input[type=number] {
     color: #f9fafb; /* slate-50 */
 }
 
-/* 9. Product Card */
+/* 9. Product Card (FIX) */
+.dark .product-card {
+    background-color: #0f172a; /* slate-900 */
+    border-color: #1e293b; /* slate-800 */
+}
 .dark .product-card-placeholder {
     background-color: #1e293b; /* slate-800 */
 }
 .dark .product-card-placeholder i {
-    color: #475569; /* slate-600 */
+    color: #334155; /* slate-700 */
 }
 .dark .product-card:hover {
     border-color: #4338ca; /* indigo-700 */
