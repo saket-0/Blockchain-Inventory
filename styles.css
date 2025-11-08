@@ -220,3 +220,177 @@ input[type=number] {
     outline: none;
     border-bottom-color: #4f46e5; /* indigo-600 */
 }
+
+/* --- Dark Mode Toggle Button --- */
+#theme-toggle-button {
+    transition: all 0.2s ease-in-out;
+}
+
+/* --- Dark Mode Styles --- */
+
+/* 1. Base Colors */
+.dark {
+    color-scheme: dark;
+}
+
+.dark body {
+    background-color: #111827; /* slate-900: True dark background */
+    color: #d1d5db; /* slate-300: Default text */
+}
+
+/* 2. Main App Layout */
+.dark #app-wrapper nav {
+    background-color: #1f2937; /* slate-800: Sidebar */
+    border-right-color: #374151; /* slate-700 */
+}
+.dark main {
+    background-color: #111827; /* slate-900 */
+}
+
+/* 3. Sidebar (Nav) */
+.dark nav .border-b {
+    border-bottom-color: #374151; /* slate-700 */
+}
+.dark #user-name {
+    color: #f9fafb; /* slate-50 */
+}
+.dark #user-role, .dark #user-employee-id {
+    color: #9ca3af; /* slate-400 */
+}
+.dark .nav-link {
+    color: #d1d5db; /* slate-300 */
+}
+.dark .nav-link:hover {
+    background-color: #374151; /* slate-700 */
+    color: #f9fafb; /* slate-50 */
+}
+.dark .nav-link.active {
+    background-color: #312e81; /* indigo-900 */
+    color: #eef2ff; /* indigo-50 */
+}
+.dark #theme-toggle-button {
+    color: #9ca3af; /* slate-400 */
+    background-color: #374151; /* slate-700 */
+}
+.dark #theme-toggle-button:hover {
+    color: #c7d2fe; /* indigo-200 */
+    background-color: #4b5563; /* slate-600 */
+}
+
+/* 4. Cards & Content (bg-white) */
+.dark .bg-white {
+    background-color: #1f2937; /* slate-800 */
+    border-color: #374151; /* slate-700 */
+}
+.dark .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+.dark .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* 5. Headings & Text */
+.dark .text-slate-800, .dark .text-slate-900 {
+    color: #f9fafb; /* slate-50 */
+}
+.dark .text-slate-600, .dark .text-slate-700 {
+    color: #d1d5db; /* slate-300 */
+}
+.dark .text-slate-500 {
+    color: #9ca3af; /* slate-400 */
+}
+.dark .text-slate-400 {
+    color: #6b7280; /* slate-500 */
+}
+
+/* 6. Ledger Blocks & Borders */
+.dark .border, .dark .border-slate-200, .dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #374151; /* slate-700 */
+}
+.dark .bg-slate-50 {
+    background-color: #374151; /* slate-700 */
+}
+.dark .text-slate-600.table-header { /* Admin table header */
+    color: #d1d5db; /* slate-300 */
+}
+.dark .truncate p {
+    color: #9ca3af; /* slate-400 */
+}
+.dark .truncate strong {
+    color: #d1d5db; /* slate-300 */
+}
+
+/* 7. Forms (Underline Inputs) */
+.dark .form-input-underline, .dark .form-select-underline {
+    border-bottom-color: #4b5563; /* slate-600 */
+    color: #f9fafb; /* slate-50 */
+}
+.dark .form-input-underline:focus, .dark .form-select-underline:focus {
+    border-bottom-color: #a5b4fc; /* indigo-300 */
+}
+.dark .form-select-underline {
+    /* SVG icon for dark mode */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+/* Standard Tailwind forms (login page, etc) */
+.dark .border-slate-300 {
+    border-color: #4b5563; /* slate-600 */
+}
+.dark .form-input-underline::placeholder,
+.dark input[type=email]::placeholder,
+.dark input[type=text]::placeholder {
+    color: #6b7280; /* slate-500 */
+}
+
+/* 8. Login Page */
+.dark #login-overlay {
+    background-color: rgba(17, 24, 39, 0.9); /* slate-900 with 90% opacity */
+}
+.dark #login-overlay .bg-white {
+    background-color: #1f2937; /* slate-800 */
+}
+.dark #login-overlay .border-t {
+    border-color: #374151; /* slate-700 */
+}
+.dark #login-overlay .bg-white span { /* "Or quick login as" text */
+    background-color: #1f2937; /* slate-800 */
+    color: #9ca3af; /* slate-400 */
+}
+.dark input[type=email], .dark input[type=password], .dark #login-email-select {
+    background-color: #374151; /* slate-700 */
+    color: #f9fafb; /* slate-50 */
+}
+
+/* 9. Product Card */
+.dark .product-card-placeholder {
+    background-color: #374151; /* slate-700 */
+}
+.dark .product-card-placeholder i {
+    color: #6b7280; /* slate-500 */
+}
+.dark .product-card:hover {
+    border-color: #4338ca; /* indigo-700 */
+}
+
+/* 10. Anomaly/Snapshot views */
+.dark .bg-yellow-100 {
+    background-color: #3f320b;
+    border-color: #b48b0a;
+}
+.dark .text-yellow-900, .dark .text-yellow-800 {
+    color: #fde68a;
+}
+.dark .bg-red-100 {
+    background-color: #450a0a;
+}
+.dark .text-red-700 {
+    color: #fca5a5;
+}
+.dark .border-red-300 {
+    border-color: #7f1d1d;
+}
+
+/* 11. Clickable Stat Item */
+.dark .clickable-stat-item:hover {
+    background-color: #374151; /* slate-700 */
+}

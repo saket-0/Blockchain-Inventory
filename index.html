@@ -57,9 +57,15 @@
 
     <div id="app-wrapper" class="flex h-screen hidden">
         <nav class="w-64 bg-white shadow-lg flex flex-col">
-            <div class="p-4 border-b border-slate-200">
-                <h1 class="text-2xl font-bold text-indigo-600">BIMS</h1>
-                <p class="text-sm text-slate-500">Inventory Management</p>
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-indigo-600">BIMS</h1>
+                    <p class="text-sm text-slate-500">Inventory Management</p>
+                </div>
+                <button id="theme-toggle-button" class="p-2 rounded-full text-slate-500 hover:text-indigo-600 hover:bg-slate-100">
+                    <i id="theme-icon-sun" class="ph-bold ph-sun text-lg"></i>
+                    <i id="theme-icon-moon" class="ph-bold ph-moon text-lg hidden"></i>
+                </button>
             </div>
             
             <div class="p-4 border-b border-slate-200">
