@@ -113,22 +113,29 @@ const renderProductList = () => {
     
     appContent.querySelector('#add-item-container').style.display = permissionService.can('CREATE_ITEM') ? 'block' : 'none';
     
-    // --- MODIFIED SECTION ---
+    // --- ADD THIS SECTION ---
     // Populate the "Add Product" form dropdowns
     const addForm = appContent.querySelector('#add-item-form');
     if (addForm) {
         populateLocationDropdown(addForm.querySelector('#add-to'));
         populateCategoryDropdown(addForm.querySelector('#add-product-category'));
         
-        // *** MODIFIED: Set the unique SKU and serialized Name ***
         addForm.querySelector('#add-product-id').value = generateUniqueSku();
         addForm.querySelector('#add-product-name').value = `New Product ${newProductCounter}`;
     }
-    // --- END MODIFICATION ---
+    // --- END ADD ---
 
     let productsFound = 0;
 
-    inventory.forEach((product, productId) => {
+    // --- MODIFICATION: Reverse the inventory list ---
+    // Convert map entries to an array
+    const productsArray = Array.from(inventory.entries());
+    // Reverse the array to show newest first
+    productsArray.reverse(); 
+
+    // Iterate over the reversed array
+    productsArray.forEach(([productId, product]) => {
+    // --- END MODIFICATION ---
         const productName = product.productName.toLowerCase();
         const sku = productId.toLowerCase();
 
