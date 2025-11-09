@@ -41,7 +41,16 @@
                     </button>
                 </form>
             </div>
-        </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold mb-4 text-slate-800">Recent Login History</h2>
+                <p class="text-sm text-slate-500 mb-4">Your 10 most recent sessions. Sessions expire after 5 minutes of inactivity.</p>
+                
+                <div id="profile-session-list" class="space-y-3 overflow-y-auto pr-2 max-h-60">
+                    <p class="text-slate-500">Loading history...</p>
+                </div>
+            </div>
+            </div>
 
         <div> <div class="bg-white p-6 rounded-lg shadow-md" sticky top-8> <h2 class="text-2xl font-semibold mb-4 text-slate-800">My Transaction History</h2>
                 <p class="text-sm text-slate-500 mb-4">Your immutable log of all actions performed.</p>

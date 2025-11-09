@@ -524,7 +524,9 @@ const renderProfilePage = async () => {
     appContent.querySelector('#profile-name').value = 'Loading...';
     appContent.querySelector('#profile-email').value = 'Loading...';
     const historyListEl = appContent.querySelector('#profile-activity-list');
+    const sessionListEl = appContent.querySelector('#profile-session-list'); // *** NEW ***
     historyListEl.innerHTML = '<p class="text-slate-500">Loading...</p>';
+    sessionListEl.innerHTML = '<p class="text-slate-500">Loading...</p>'; // *** NEW ***
     
     try {
         // Fetch all profile data from the new endpoint
@@ -536,13 +538,13 @@ const renderProfilePage = async () => {
             throw new Error(err.message || 'Failed to load profile data');
         }
         const data = await response.json();
-        const { user, history } = data; // Destructure data
+        const { user, history, sessions } = data; // *** Destructure new 'sessions' data ***
 
         // 1. Populate forms
         appContent.querySelector('#profile-name').value = user.name;
         appContent.querySelector('#profile-email').value = user.email;
         
-        // 2. Render History "Commits"
+        // 2. Render Transaction History "Commits"
         historyListEl.innerHTML = '';
         if (history.length === 0) {
             historyListEl.innerHTML = '<p class="text-slate-500">No transaction history found.</p>';
@@ -551,6 +553,40 @@ const renderProfilePage = async () => {
                 historyListEl.appendChild(createLedgerBlockElement(block));
             });
         }
+
+        // 3. *** NEW: Render Session History ***
+        sessionListEl.innerHTML = '';
+        if (!sessions || sessions.length === 0) {
+            sessionListEl.innerHTML = '<p class="text-slate-500">No session history found.</p>';
+        } else {
+            sessions.forEach(session => {
+                const sessionElement = document.createElement('div');
+                sessionElement.className = 'flex items-center justify-between text-sm p-2 bg-slate-50 rounded-md';
+                
+                // The 'expire' timestamp is when the session *will* expire or *did* expire.
+                // We can display this as the "Last Active" or "Expires" time.
+                const expireDate = new Date(session.expire);
+                const isExpired = expireDate < new Date();
+
+                // --- *** THIS IS THE UPDATED LINE *** ---
+                sessionElement.innerHTML = `
+                    <div>
+                        <p class="font-medium text-slate-700">
+                            ${isExpired ? 'Session Expired' : 'Session Expires'}
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            ${expireDate.toLocaleString()}
+                        </p>
+                    </div>
+                    <span class="text-xs font-medium ${isExpired ? 'text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' : 'text-green-600 bg-green-100 px-2 py-0.5 rounded-full'}">
+                        ${isExpired ? 'Expired' : 'Active'}
+                    </span>
+                `;
+                // --- *** END OF UPDATE *** ---
+                sessionListEl.appendChild(sessionElement);
+            });
+        }
+        // *** END NEW SECTION ***
 
     } catch (error) {
         showError(error.message);

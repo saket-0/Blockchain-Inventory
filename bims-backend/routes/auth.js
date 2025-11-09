@@ -75,19 +75,42 @@ module.exports = (pool) => {
         res.status(200).json(req.session.user);
     });
 
+    // --- *** THIS IS THE UPDATED LOGOUT FUNCTION *** ---
     // POST /api/auth/logout
     router.post('/logout', (req, res) => {
         console.log('🚪 Logout request');
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('❌ Logout error:', err);
-                return res.status(500).json({ message: 'Could not log out' });
-            }
+
+        if (req.session && req.session.user) { // Check for user
+            // Get user data *before* modifying session
+            const userForLog = req.session.user;
+
+            // Set cookie to expire immediately
+            req.session.cookie.maxAge = 0; 
+            
+            // *** DO NOT SET req.session.user = null ***
+            // We leave the user object attached so the query
+            // (sess->'user'->>'id') can find this expired session.
+            
+            // Save this expired state to the database
+            req.session.save((err) => { 
+                if (err) {
+                    console.error('❌ Logout error (session save):', err);
+                    return res.status(500).json({ message: 'Could not log out' });
+                }
+                
+                // Tell the browser to clear its cookie
+                res.clearCookie('bims.sid'); 
+                console.log(`✅ Logout successful (session for ${userForLog.email} expired and saved)`);
+                res.status(200).json({ message: 'Logout successful' });
+            });
+        } else {
+            // No session to begin with
             res.clearCookie('bims.sid');
-            console.log('✅ Logout successful');
+            console.log('✅ Logout (no session)');
             res.status(200).json({ message: 'Logout successful' });
-        });
+        }
     });
+    // --- *** END OF UPDATE *** ---
     
     // Return the router
     return router;

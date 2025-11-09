@@ -40,12 +40,25 @@ module.exports = (pool) => {
             
             const history = historyResult.rows;
 
-            // 2. *** STATS CALCULATION REMOVED ***
+            // 2. *** NEW: Get user's session history ***
+            // We query the 'user_sessions' table created by 'connect-pg-simple'
+            // We look inside the 'sess' JSONB column for a 'user' object
+            // where the 'id' field matches the current user's ID.
+            const sessionResult = await pool.query(
+                `SELECT expire FROM user_sessions 
+                 WHERE (sess->'user'->>'id')::integer = $1 
+                 ORDER BY expire DESC
+                 LIMIT 10`, // Get the 10 most recent sessions
+                [userId]
+            );
+            const sessions = sessionResult.rows;
+            // *** END NEW SECTION ***
             
-            // Return user and their history
+            // Return user, their history, and their sessions
             res.status(200).json({
                 user: req.session.user,
-                history: history
+                history: history,
+                sessions: sessions // *** NEWLY ADDED ***
             });
 
         } catch (e) {
