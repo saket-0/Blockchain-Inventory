@@ -22,8 +22,9 @@ const renderDashboard = async () => {
     appContent.querySelector('#kpi-total-units').textContent = totalUnits;
     appContent.querySelector('#kpi-transactions').textContent = blockchain.length;
     
-    appContent.querySelector('#clear-db-button').style.display = permissionService.can('CLEAR_DB') ? 'flex' : 'none';
-    appContent.querySelector('#verify-chain-button').style.display = permissionService.can('VERIFY_CHAIN') ? 'flex' : 'none';
+    // --- *** THESE LINES ARE NOW REMOVED *** ---
+    // appContent.querySelector('#clear-db-button').style.display = permissionService.can('CLEAR_DB') ? 'flex' : 'none';
+    // appContent.querySelector('#verify-chain-button').style.display = permissionService.can('VERIFY_CHAIN') ? 'flex' : 'none';
     
     const activityContainer = appContent.querySelector('#recent-activity-container');
     if (activityContainer && permissionService.can('VIEW_LEDGER')) {
@@ -326,6 +327,13 @@ const renderFullLedger = () => {
         snapshotFormContainer.style.display = permissionService.can('VIEW_HISTORICAL_STATE') ? 'block' : 'none';
         snapshotFormContainer.querySelector('#snapshot-timestamp').value = new Date().toISOString().slice(0, 16);
     }
+
+    // --- *** THIS BLOCK IS NEWLY ADDED *** ---
+    const verifyChainContainer = appContent.querySelector('#verify-chain-container');
+    if (verifyChainContainer) {
+        verifyChainContainer.style.display = permissionService.can('VERIFY_CHAIN') ? 'block' : 'none';
+    }
+    // --- *** END NEW BLOCK *** ---
 
     const ledgerDisplay = appContent.querySelector('#full-ledger-display');
     ledgerDisplay.innerHTML = '';
