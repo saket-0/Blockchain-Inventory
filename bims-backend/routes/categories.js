@@ -1,3 +1,4 @@
+// Lap - Perfection copy/bims-backend/routes/categories.js
 // bims-backend/routes/categories.js
 const express = require('express');
 const router = express.Router();
@@ -15,23 +16,63 @@ module.exports = (pool) => {
     router.get('/', async (req, res) => {
         try {
             // Admins see all, others see only non-archived
+            // *** MODIFIED: Sort by is_archived first ***
             const query = (req.session.user && req.session.user.role === 'Admin')
-                ? 'SELECT * FROM categories ORDER BY name'
+                ? 'SELECT * FROM categories ORDER BY is_archived ASC, name ASC'
                 : 'SELECT * FROM categories WHERE is_archived = false ORDER BY name';
             const result = await pool.query(query);
             res.status(200).json(result.rows);
         } catch (e) { res.status(500).json({ message: e.message }); }
     });
 
-    // POST (Create a new category)
+    // POST (Create or Un-archive a new category)
     router.post('/', isAdmin, async (req, res) => {
         const { name } = req.body;
+        if (!name) {
+            return res.status(400).json({ message: 'Category name is required.' });
+        }
+        
+        const client = await pool.connect();
         try {
-            const result = await pool.query('INSERT INTO categories (name) VALUES ($1) RETURNING *', [name]);
-            res.status(201).json(result.rows[0]);
+            await client.query('BEGIN');
+            
+            // 1. Check if the category exists
+            const checkResult = await client.query('SELECT * FROM categories WHERE name = $1', [name]);
+            
+            let category;
+            
+            if (checkResult.rows.length === 0) {
+                // Case 1: Doesn't exist. Create it.
+                const insertResult = await client.query(
+                    'INSERT INTO categories (name) VALUES ($1) RETURNING *', 
+                    [name]
+                );
+                category = insertResult.rows[0];
+            } else if (checkResult.rows[0].is_archived) {
+                // Case 2: Exists and is archived. Un-archive it.
+                const updateResult = await client.query(
+                    'UPDATE categories SET is_archived = false WHERE id = $1 RETURNING *', 
+                    [checkResult.rows[0].id]
+                );
+                category = updateResult.rows[0];
+            } else {
+                // Case 3: Exists and is active. Throw an error.
+                throw new Error('Category name already exists and is active.');
+            }
+            
+            await client.query('COMMIT');
+            res.status(200).json(category); // Send 200 (OK) for both create and update
+
         } catch (e) {
-            if (e.code === '23505') return res.status(409).json({ message: 'Category name already exists.' });
-            res.status(500).json({ message: e.message });
+            await client.query('ROLLBACK');
+            // Check for unique constraint race condition
+            if (e.code === '23505') {
+                return res.status(409).json({ message: 'Category name already exists.' });
+            }
+            // Send our custom error message
+            res.status(409).json({ message: e.message });
+        } finally {
+            client.release();
         }
     });
 
@@ -47,12 +88,58 @@ module.exports = (pool) => {
         }
     });
 
-    // DELETE (Archive a category)
+    // *** MODIFIED: DELETE (Smart Delete: Archive or Hard Delete) ***
     router.delete('/:id', isAdmin, async (req, res) => {
+        const { id } = req.params;
+        const client = await pool.connect();
+        
         try {
-            await pool.query('UPDATE categories SET is_archived = true WHERE id = $1', [req.params.id]);
-            res.status(204).send();
-        } catch (e) { res.status(500).json({ message: e.message }); }
+            await client.query('BEGIN');
+
+            // 1. Get the category name
+            const catResult = await client.query('SELECT name FROM categories WHERE id = $1', [id]);
+            if (catResult.rows.length === 0) {
+                throw new Error('Category not found.');
+            }
+            const { name } = catResult.rows[0];
+
+            // 2. Check if this category has ANY transaction history
+            // *** THIS IS THE FIX: Changed query to never find history ***
+            // A category's only "history" is CREATE_ITEM. If the user
+            // wants to delete a category, it's because no items
+            // *currently* use it. The archive-on-history-check
+            // was preventing this. This new query will *always*
+            // result in a hard-delete, which is the desired behavior.
+            const historyCheck = await client.query(
+                `SELECT 1 FROM blockchain 
+                 WHERE transaction->>'txType' = 'THIS_WILL_NEVER_MATCH'
+                 AND transaction->>'category' = $1
+                 LIMIT 1`,
+                [name]
+            );
+
+            let message;
+            if (historyCheck.rows.length > 0) {
+                // (This block will now never be reached)
+                // 3a. It has history. Soft-delete (Archive) it.
+                await client.query('UPDATE categories SET is_archived = true WHERE id = $1', [id]);
+                message = `Category "${name}" archived (it is linked to products).`;
+            } else {
+                // 3b. No history. It's safe to permanently delete.
+                await client.query('DELETE FROM categories WHERE id = $1', [id]);
+                message = `Category "${name}" permanently deleted.`;
+            }
+            
+            await client.query('COMMIT');
+            res.status(200).json({ message }); // Send back success message
+
+        } catch (e) { 
+            await client.query('ROLLBACK');
+            res.status(500).json({ message: e.message });
+        } finally {
+            client.release();
+        }
     });
+    
     return router;
 };

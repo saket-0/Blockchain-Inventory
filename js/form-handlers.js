@@ -25,13 +25,14 @@ const handleAddItem = async (form) => {
         afterQuantity: quantity, 
         toLocation
     };
+    
+    // We add the user from the frontend, but the backend will
+    // overwrite this with the verified session user.
+    // --- REDUNDANT FIELDS REMOVED ---
 
     if (processTransaction(transaction, false, showError)) {
         try {
             await addTransactionToChain(transaction);
-            
-            // *** MODIFICATION: renderProductList() removed ***
-            // The UI will update via the SSE event
             showSuccess(`Product ${itemName} added! Updating system...`);
             
             // --- MODIFIED: Form reset logic ---
@@ -51,14 +52,14 @@ const handleAddItem = async (form) => {
 
         } catch (error) {
             showError(`Server error: ${error.message}`);
-            rebuildInventoryState(); // Roll back the local pre-check
+            rebuildInventoryState();
         }
     }
 };
 
 const handleUpdateStock = async (form) => {
     if (!permissionService.can('UPDATE_STOCK')) return showError("Access Denied.");
-    // ... (logic to get itemSku, quantity, etc. as before) ...
+
     const itemSku = document.getElementById('update-product-id').value;
     const quantity = parseInt(form.querySelector('#update-quantity').value, 10);
     const clickedButton = document.activeElement;
@@ -72,7 +73,6 @@ const handleUpdateStock = async (form) => {
     let beforeQuantity, afterQuantity;
 
     if (actionType === 'STOCK_IN') {
-        // ... (transaction setup as before) ...
         const locationIn = form.querySelector('#update-location').value;
         beforeQuantity = product.locations.get(locationIn) || 0;
         afterQuantity = beforeQuantity + quantity;
@@ -81,11 +81,11 @@ const handleUpdateStock = async (form) => {
             txType: "STOCK_IN", itemSku, quantity, 
             location: locationIn, 
             beforeQuantity, afterQuantity
+            // --- REDUNDANT FIELDS REMOVED ---
         };
         success = processTransaction(transaction, false, showError);
 
     } else if (actionType === 'STOCK_OUT') {
-        // ... (transaction setup as before) ...
         const locationOut = form.querySelector('#update-location').value;
         beforeQuantity = product.locations.get(locationOut) || 0;
         afterQuantity = beforeQuantity - quantity;
@@ -94,6 +94,7 @@ const handleUpdateStock = async (form) => {
             txType: "STOCK_OUT", itemSku, quantity, 
             location: locationOut, 
             beforeQuantity, afterQuantity
+            // --- REDUNDANT FIELDS REMOVED ---
         };
         success = processTransaction(transaction, false, showError);
     }
@@ -101,23 +102,19 @@ const handleUpdateStock = async (form) => {
     if (success) {
         try {
             await addTransactionToChain(transaction);
-            
-            // *** MODIFICATION: Render calls removed ***
-            // destroyCurrentCharts();
-            // renderProductDetail(itemSku);
             showSuccess(`Stock for ${itemSku} updated! Updating system...`);
         
         } catch (error) {
             showError(`Server error: ${error.message}`);
-            rebuildInventoryState(); // Roll back pre-check
-            renderProductDetail(itemSku); // Re-render on error
+            rebuildInventoryState();
+            renderProductDetail(itemSku);
         }
     }
 };
 
 const handleMoveStock = async (form) => {
     if (!permissionService.can('UPDATE_STOCK')) return showError("Access Denied.");
-    // ... (logic to get itemSku, quantity, etc. as before) ...
+
     const itemSku = document.getElementById('update-product-id').value;
     const quantity = parseInt(form.querySelector('#move-quantity').value, 10);
     const fromLocation = form.querySelector('#move-from-location').value;
@@ -139,27 +136,23 @@ const handleMoveStock = async (form) => {
         fromLocation, toLocation,
         beforeQuantity: { from: beforeFromQty, to: beforeToQty },
         afterQuantity: { from: beforeFromQty - quantity, to: beforeToQty + quantity }
+        // --- REDUNDANT FIELDS REMOVED ---
     };
-    
+
     if (processTransaction(transaction, false, showError)) {
         try {
             await addTransactionToChain(transaction);
-            
-            // *** MODIFICATION: Render calls removed ***
-            // destroyCurrentCharts();
-            // renderProductDetail(itemSku);
             showSuccess(`Moved ${quantity} units of ${itemSku}. Updating system...`);
         
         } catch (error) {
             showError(`Server error: ${error.message}`);
-            rebuildInventoryState(); // Roll back pre-check
-            renderProductDetail(itemSku); // Re-render on error
+            rebuildInventoryState();
+            renderProductDetail(itemSku);
         }
     }
 };
 
 const handleClearDb = async (navigateTo) => {
-    // ... (This function does NOT call addTransactionToChain, so it's unchanged) ...
     if (!permissionService.can('CLEAR_DB')) return showError("Access Denied.");
     if (confirm('Are you sure you want to clear the entire blockchain? This cannot be undone.')) {
         try {
@@ -184,7 +177,6 @@ const handleClearDb = async (navigateTo) => {
 };
 
 const handleVerifyChain = async () => {
-    // ... (This function is unchanged) ...
     if (!permissionService.can('VERIFY_CHAIN')) return showError("Access Denied.");
     try {
         const response = await fetch(`${API_BASE_URL}/api/blockchain/verify`, {
@@ -205,6 +197,7 @@ const handleVerifyChain = async () => {
     }
 };
 
+// *** MODIFIED FUNCTION SIGNATURE ***
 const handleDeleteProduct = async (productId, productName, navigateTo) => {
     if (!permissionService.can('DELETE_ITEM')) return showError("Access Denied.");
 
@@ -223,26 +216,25 @@ const handleDeleteProduct = async (productId, productName, navigateTo) => {
         try {
             // If pre-check passes, send to server
             await addTransactionToChain(transaction);
-            
-            // *** MODIFICATION: navigateTo() removed ***
             showSuccess(`Product ${productName} deleted! Updating system...`);
-            // The SSE listener will navigate the user by refreshing the view
-            // (which will fail to find the product and go to 'products' list)
-            // or by refreshing the 'products' list directly.
+            
+            // *** USE THE PASSED-IN FUNCTION ***
+            // navigateTo('products'); // <-- REMOVED (SSE will handle)
 
         } catch (error) {
             showError(`Server error: ${error.message}`);
             rebuildInventoryState(); // Roll back the local state change
-            renderProductDetail(productId); // Re-render the detail page on error
+            renderProductDetail(productId); // Re-render the detail page
         }
     }
 };
 
 
-// *** MODIFIED: This helper now ONLY logs to console ***
-// It no longer pushes to the local blockchain array.
+// *** Helper function to log admin actions (to avoid repetition) ***
 const logAdminActionToBlockchain = async (transaction) => {
     try {
+        // We don't need to await this for the UI,
+        // but we await to catch errors.
         const response = await fetch(`${API_BASE_URL}/api/blockchain`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -254,10 +246,7 @@ const logAdminActionToBlockchain = async (transaction) => {
             throw new Error(err.message || 'Blockchain logging failed');
         }
         const newBlock = await response.json();
-        
-        // *** MODIFICATION: blockchain.push() removed ***
-        // blockchain.push(newBlock); // <-- REMOVED
-        
+        // blockchain.push(newBlock); // <-- REMOVED (SSE handles this)
         console.log('Admin action logged to blockchain:', newBlock);
     } catch (error) {
         // Log the error, but don't block the user
@@ -281,24 +270,27 @@ const handleRoleChange = async (userId, userName, newRole) => {
         }
         showSuccess(`Role for ${data.user.name} updated to ${newRole}.`);
         
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_EDIT_ROLE",
             targetUserId: data.user.id,
             targetUser: data.user.name,
             targetRole: data.user.role
         });
-        
-        // *** MODIFICATION: Local state update removed ***
-        // We let the SSE listener refresh the admin panel
+
+        // (SSE will handle UI refresh)
+
     } catch (error) {
         showError(error.message);
         renderAdminPanel(); // Re-render to reset on failure
     }
 };
 
-// *** MODIFIED ***
+// *** NEW FUNCTION ***
 const handleEmailChange = async (userId, userName, newEmail, oldEmail, inputElement) => {
     if (!permissionService.can('MANAGE_USERS')) return showError("Access Denied.");
+    
+    // Do nothing if email hasn't changed
     if (newEmail === oldEmail) return;
 
     try {
@@ -314,10 +306,12 @@ const handleEmailChange = async (userId, userName, newEmail, oldEmail, inputElem
         }
         showSuccess(`Email for ${data.user.name} updated.`);
         
+        // Update the 'oldEmail' data attribute to the new email
         if (inputElement) {
             inputElement.dataset.oldEmail = newEmail;
         }
 
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_EDIT_EMAIL",
             targetUserId: data.user.id,
@@ -326,32 +320,37 @@ const handleEmailChange = async (userId, userName, newEmail, oldEmail, inputElem
             oldEmail: oldEmail
         });
 
-        await populateLoginDropdown(); // This is OK, it's not part of the blockchain state
+        // Update the login dropdown if it's visible
+        await populateLoginDropdown();
 
     } catch (error) {
         showError(error.message);
+        // Reset the input value to the old email on failure
         if (inputElement) {
             inputElement.value = oldEmail;
         }
     }
 };
 
-// *** MODIFIED ***
+// *** MODIFIED: THIS IS THE FIX ***
 const handleAddUser = async (form) => {
     if (!permissionService.can('MANAGE_USERS')) return showError("Access Denied.");
-    // ... (validation as before) ...
+
     const name = form.querySelector('#add-user-name').value;
     const email = form.querySelector('#add-user-email').value;
     const role = form.querySelector('#add-user-role').value;
     const password = form.querySelector('#add-user-password').value;
     const confirmPassword = form.querySelector('#add-user-confirm-password').value;
+
+    // ** CLIENT-SIDE VALIDATION **
     if (!name || !email || !role || !password || !confirmPassword) {
         return showError("All fields are required.");
     }
     if (password !== confirmPassword) {
         return showError("Passwords do not match.");
     }
-    
+    // ** END VALIDATION **
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/users`, {
             method: 'POST',
@@ -368,6 +367,7 @@ const handleAddUser = async (form) => {
         showSuccess(`User ${data.user.name} created successfully!`);
         form.reset();
         
+        // Log to blockchain (data.user contains the new generated employee_id)
         await logAdminActionToBlockchain({
             txType: "ADMIN_CREATE_USER",
             targetUserId: data.user.id,
@@ -377,18 +377,18 @@ const handleAddUser = async (form) => {
             targetEmployeeId: data.user.employee_id
         });
 
-        // *** MODIFICATION: Render calls removed ***
-        // renderAdminPanel(); // <-- REMOVED
-        await populateLoginDropdown(); // This is OK
+        // (SSE will handle UI refresh)
+        await populateLoginDropdown();
         
     } catch (error) {
         showError(error.message);
     }
 };
 
-// *** MODIFIED ***
+// *** NEW FUNCTION ***
 const handleDeleteUser = async (userId, userName, userEmail) => {
     if (!permissionService.can('MANAGE_USERS')) return showError("Access Denied.");
+
     if (!confirm(`Are you sure you want to permanently delete ${userName} (${userEmail})?\n\nThis action is irreversible and will be logged to the blockchain.`)) {
         return;
     }
@@ -406,6 +406,7 @@ const handleDeleteUser = async (userId, userName, userEmail) => {
         
         showSuccess(`User ${userName} deleted.`);
 
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_DELETE_USER",
             targetUserId: userId,
@@ -413,9 +414,8 @@ const handleDeleteUser = async (userId, userName, userEmail) => {
             targetEmail: userEmail
         });
 
-        // *** MODIFICATION: Render calls removed ***
-        // renderAdminPanel(); // <-- REMOVED
-        await populateLoginDropdown(); // This is OK
+        // (SSE will handle UI refresh)
+        await populateLoginDropdown();
 
     } catch (error) {
         showError(error.message);
@@ -424,10 +424,11 @@ const handleDeleteUser = async (userId, userName, userEmail) => {
 
 
 const handleSnapshotForm = async (form, navigateTo) => {
-    // ... (This function is unchanged) ...
     if (!permissionService.can('VIEW_HISTORICAL_STATE')) return showError("Access Denied.");
+    
     const timestamp = form.querySelector('#snapshot-timestamp').value;
     if (!timestamp) return showError("Please select a date and time.");
+
     const button = form.querySelector('#generate-snapshot-button');
     button.disabled = true;
     button.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Generating...';
@@ -436,10 +437,12 @@ const handleSnapshotForm = async (form, navigateTo) => {
         const response = await fetch(`${API_BASE_URL}/api/blockchain/state-at?timestamp=${timestamp}`, {
             credentials: 'include'
         });
+        
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.message || 'Failed to generate snapshot');
         }
+        
         navigateTo('snapshot', { snapshotData: data });
 
     } catch (error) {
@@ -449,7 +452,7 @@ const handleSnapshotForm = async (form, navigateTo) => {
     }
 };
 
-// --- LOCATION HANDLERS (MODIFIED) ---
+// --- LOCATION HANDLERS ---
 const handleAddLocation = async (form) => {
     const nameInput = form.querySelector('#add-location-name');
     const name = nameInput.value;
@@ -463,33 +466,33 @@ const handleAddLocation = async (form) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message);
         
-        showSuccess(`Location "${data.name}" added.`);
+        showSuccess(`Location "${data.name}" added/restored.`);
         nameInput.value = '';
 
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_ADD_LOCATION",
             targetId: data.id,
             targetName: data.name
         });
         
-        // *** MODIFICATION: Render calls removed ***
-        // await fetchLocations(); 
-        // await renderAdminPanel();
+        // (SSE will handle UI refresh)
     } catch (error) { showError(error.message); }
 };
 
+// *** MODIFIED: To accept element and log to chain ***
 const handleRenameLocation = async (inputElement) => {
-    // ... (logic as before) ...
     const id = inputElement.dataset.id;
     const newName = inputElement.value;
     const oldName = inputElement.dataset.oldName;
-    if (newName === oldName) return;
+
+    if (newName === oldName) return; // No change
     if (!newName) {
         showError("Location name cannot be empty.");
-        inputElement.value = oldName;
+        inputElement.value = oldName; // Reset
         return;
     }
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/locations/${id}`, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -499,8 +502,9 @@ const handleRenameLocation = async (inputElement) => {
         if (!response.ok) throw new Error(data.message);
         
         showSuccess(`Location renamed to "${data.name}".`);
-        inputElement.dataset.oldName = data.name;
+        inputElement.dataset.oldName = data.name; // Update the 'oldName'
         
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_RENAME_LOCATION",
             targetId: id,
@@ -508,38 +512,52 @@ const handleRenameLocation = async (inputElement) => {
             newName: data.name
         });
 
-        // *** MODIFICATION: fetchLocations() removed ***
-        // await fetchLocations();
+        // (SSE will handle UI refresh)
     } catch (error) { 
         showError(error.message); 
-        inputElement.value = oldName; 
-        renderAdminPanel(); // Re-render on failure
+        inputElement.value = oldName; // Reset on failure
+        renderAdminPanel(); 
     }
 };
 
+// *** THIS IS THE FIX: Check response.status before calling .json() ***
 const handleArchiveLocation = async (id, name) => {
-    if (!confirm(`Archive "${name}"? This hides it from new transactions.`)) return;
+    if (!confirm(`Archive or Delete "${name}"?\n\n- If it has history, it will be ARCHIVED.\n- If it has no history, it will be PERMANENTLY DELETED.`)) return;
     try {
         const response = await fetch(`${API_BASE_URL}/api/locations/${id}`, {
             method: 'DELETE', credentials: 'include'
         });
-        if (!response.ok) throw new Error((await response.json()).message);
         
-        showSuccess(`Location "${name}" archived.`);
+        let data = {};
+        let successMessage = `Location "${name}" archived.`; // Default for 204
 
+        if (response.status === 200) {
+            // Server sent a JSON message (Smart Delete)
+            data = await response.json();
+            successMessage = data.message;
+        } else if (response.status === 204) {
+            // Server sent No Content (Old Archive logic)
+            // This is still a success, so we just use the default message
+        } else if (!response.ok) {
+            // Server sent an error (which WILL be JSON)
+            data = await response.json();
+            throw new Error(data.message);
+        }
+        
+        showSuccess(successMessage);
+
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_ARCHIVE_LOCATION",
             targetId: id,
             targetName: name
         });
         
-        // *** MODIFICATION: Render calls removed ***
-        // await fetchLocations();
-        // await renderAdminPanel();
+        // (SSE will handle UI refresh)
     } catch (error) { showError(error.message); }
 };
 
-// --- CATEGORY HANDLERS (MODIFIED) ---
+// --- CATEGORY HANDLERS ---
 const handleAddCategory = async (form) => {
     const nameInput = form.querySelector('#add-category-name');
     const name = nameInput.value;
@@ -553,33 +571,33 @@ const handleAddCategory = async (form) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message);
         
-        showSuccess(`Category "${data.name}" added.`);
+        showSuccess(`Category "${data.name}" added/restored.`);
         nameInput.value = '';
         
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_ADD_CATEGORY",
             targetId: data.id,
             targetName: data.name
         });
 
-        // *** MODIFICATION: Render calls removed ***
-        // await fetchCategories();
-        // await renderAdminPanel();
+        // (SSE will handle UI refresh)
     } catch (error) { showError(error.message); }
 };
 
+// *** MODIFIED: To accept element and log to chain ***
 const handleRenameCategory = async (inputElement) => {
-    // ... (logic as before) ...
     const id = inputElement.dataset.id;
     const newName = inputElement.value;
     const oldName = inputElement.dataset.oldName;
-    if (newName === oldName) return;
+
+    if (newName === oldName) return; // No change
     if (!newName) {
         showError("Category name cannot be empty.");
-        inputElement.value = oldName;
+        inputElement.value = oldName; // Reset
         return;
     }
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -589,8 +607,9 @@ const handleRenameCategory = async (inputElement) => {
         if (!response.ok) throw new Error(data.message);
         
         showSuccess(`Category renamed to "${data.name}".`);
-        inputElement.dataset.oldName = data.name;
+        inputElement.dataset.oldName = data.name; // Update the 'oldName'
 
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_RENAME_CATEGORY",
             targetId: id,
@@ -598,43 +617,58 @@ const handleRenameCategory = async (inputElement) => {
             newName: data.name
         });
         
-        // *** MODIFICATION: fetchCategories() removed ***
-        // await fetchCategories();
+        // (SSE will handle UI refresh)
     } catch (error) { 
         showError(error.message); 
-        inputElement.value = oldName; 
-        renderAdminPanel(); // Re-render on failure
+        inputElement.value = oldName; // Reset on failure
+        renderAdminPanel(); 
     }
 };
 
+// *** THIS IS THE FIX: Check response.status before calling .json() ***
 const handleArchiveCategory = async (id, name) => {
-    if (!confirm(`Archive "${name}"? This hides it from new transactions.`)) return;
+    if (!confirm(`Archive or Delete "${name}"?\n\n- If it has history, it will be ARCHIVED.\n- If it has no history, it will be PERMANENTLY DELETED.`)) return;
     try {
         const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
             method: 'DELETE', credentials: 'include'
         });
-        if (!response.ok) throw new Error((await response.json()).message);
         
-        showSuccess(`Category "${name}" archived.`);
+        let data = {};
+        let successMessage = `Category "${name}" archived.`; // Default for 204
 
+        if (response.status === 200) {
+            // Server sent a JSON message (Smart Delete)
+            data = await response.json();
+            successMessage = data.message;
+        } else if (response.status === 204) {
+            // Server sent No Content (Old Archive logic)
+            // This is still a success, so we just use the default message
+        } else if (!response.ok) {
+            // Server sent an error (which WILL be JSON)
+            data = await response.json();
+            throw new Error(data.message);
+        }
+
+        showSuccess(successMessage);
+
+        // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_ARCHIVE_CATEGORY",
             targetId: id,
             targetName: name
         });
         
-        // *** MODIFICATION: Render calls removed ***
-        // await fetchCategories();
-        // await renderAdminPanel();
+        // (SSE will handle UI refresh)
     } catch (error) { showError(error.message); }
 };
 
 
-// *** PROFILE HANDLERS (MODIFIED) ***
+// *** NEW FUNCTION: Handle Profile Update ***
 const handleUpdateProfile = async (form) => {
-    // ... (logic as before) ...
     const name = form.querySelector('#profile-name').value;
     const email = form.querySelector('#profile-email').value;
+    
+    // Prevent accidental update if unchanged
     if (name === currentUser.name && email === currentUser.email) {
         return showSuccess("No changes to save.");
     }
@@ -654,32 +688,35 @@ const handleUpdateProfile = async (form) => {
         
         showSuccess('Profile updated! Updating system...');
         
-        const oldName = currentUser.name;
-        const oldEmail = currentUser.email;
+        // CRITICAL: Update local state
+        const oldName = currentUser.name; // Store old name for logging
+        const oldEmail = currentUser.email; // Store old email for logging
         currentUser = data.user;
         document.getElementById('user-name').textContent = currentUser.name;
 
-        await populateLoginDropdown(); // This is OK
+        // Also update the login dropdown
+        await populateLoginDropdown();
 
+        // Log this action to the blockchain (using addTransactionToChain, not the admin helper)
         await addTransactionToChain({
             txType: "USER_UPDATE_PROFILE",
             targetUserId: currentUser.id,
             targetUser: currentUser.name,
             targetEmail: currentUser.email,
-            oldName: oldName, 
+            oldName: oldName, // Add old data for traceability
             oldEmail: oldEmail
         });
-        // *** MODIFICATION: Render call removed ***
-        // (SSE listener will refresh the profile page)
+        // (SSE will handle UI refresh)
 
     } catch (error) {
         showError(error.message);
-        await renderProfilePage(); // Re-render on error
+        // Re-render to reset form to old values on failure
+        await renderProfilePage();
     }
 };
 
+// *** NEW FUNCTION: Handle Password Change ***
 const handleChangePassword = async (form) => {
-    // ... (logic as before) ...
     const currentPassword = form.querySelector('#profile-current-password').value;
     const newPassword = form.querySelector('#profile-new-password').value;
     const confirmPassword = form.querySelector('#profile-confirm-password').value;
@@ -707,13 +744,13 @@ const handleChangePassword = async (form) => {
         showSuccess('Password changed successfully!');
         form.reset();
 
+        // Log this action to the blockchain
         await addTransactionToChain({
             txType: "USER_CHANGE_PASSWORD",
             targetUserId: currentUser.id,
             targetUser: currentUser.name
         });
-        // *** MODIFICATION: Render call removed ***
-        // (SSE listener will refresh the profile page)
+        // (SSE will handle UI refresh)
 
     } catch (error) {
         showError(error.message);

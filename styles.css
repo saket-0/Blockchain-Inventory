@@ -14,13 +14,17 @@ main {
 
 
 /* Custom scrollbar for scrollable areas */
+/* *** MODIFIED: Added .location-list-scroll & .category-list-scroll *** */
 #item-history-display::-webkit-scrollbar,
 #full-ledger-display::-webkit-scrollbar,
 #recent-activity-list::-webkit-scrollbar,
 #low-stock-list::-webkit-scrollbar,
 #profile-activity-list::-webkit-scrollbar,
-#profile-session-list::-webkit-scrollbar, /* <--- ADDED */
-.anomaly-list-scroll::-webkit-scrollbar {
+#profile-session-list::-webkit-scrollbar,
+.anomaly-list-scroll::-webkit-scrollbar,
+.user-table-container::-webkit-scrollbar,
+.location-list-scroll::-webkit-scrollbar,
+.category-list-scroll::-webkit-scrollbar {
     width: 6px;
 }
 #item-history-display::-webkit-scrollbar-track,
@@ -28,8 +32,11 @@ main {
 #recent-activity-list::-webkit-scrollbar-track,
 #low-stock-list::-webkit-scrollbar-track,
 #profile-activity-list::-webkit-scrollbar-track,
-#profile-session-list::-webkit-scrollbar-track, /* <--- ADDED */
-.anomaly-list-scroll::-webkit-scrollbar-track {
+#profile-session-list::-webkit-scrollbar-track,
+.anomaly-list-scroll::-webkit-scrollbar-track,
+.user-table-container::-webkit-scrollbar-track,
+.location-list-scroll::-webkit-scrollbar-track,
+.category-list-scroll::-webkit-scrollbar-track {
     background: #f1f5f9; /* slate-100 */
 }
 #item-history-display::-webkit-scrollbar-thumb,
@@ -37,8 +44,11 @@ main {
 #recent-activity-list::-webkit-scrollbar-thumb,
 #low-stock-list::-webkit-scrollbar-thumb,
 #profile-activity-list::-webkit-scrollbar-thumb,
-#profile-session-list::-webkit-scrollbar-thumb, /* <--- ADDED */
-.anomaly-list-scroll::-webkit-scrollbar-thumb {
+#profile-session-list::-webkit-scrollbar-thumb,
+.anomaly-list-scroll::-webkit-scrollbar-thumb,
+.user-table-container::-webkit-scrollbar-thumb,
+.location-list-scroll::-webkit-scrollbar-thumb,
+.category-list-scroll::-webkit-scrollbar-thumb {
     background: #94a3b8; /* slate-400 */
     border-radius: 3px;
 }
@@ -47,10 +57,15 @@ main {
 #recent-activity-list::-webkit-scrollbar-thumb:hover,
 #low-stock-list::-webkit-scrollbar-thumb:hover,
 #profile-activity-list::-webkit-scrollbar-thumb:hover,
-#profile-session-list::-webkit-scrollbar-thumb:hover, /* <--- ADDED */
-.anomaly-list-scroll::-webkit-scrollbar-thumb:hover {
+#profile-session-list::-webkit-scrollbar-thumb:hover,
+.anomaly-list-scroll::-webkit-scrollbar-thumb:hover,
+.user-table-container::-webkit-scrollbar-thumb:hover,
+.location-list-scroll::-webkit-scrollbar-thumb:hover,
+.category-list-scroll::-webkit-scrollbar-thumb:hover {
     background: #64748b; /* slate-500 */
 }
+/* *** END MODIFICATION *** */
+
 
 /* Toast message styles */
 .toast-message {
@@ -123,6 +138,22 @@ main {
 .nav-link i {
     font-size: 1.25rem; /* 20px */
 }
+
+/* --- *** Rule for User Table Scroll *** --- */
+.user-table-container {
+    max-height: 50vh; /* 50% of the viewport height */
+    overflow-y: auto;
+}
+
+/* --- *** NEW: Rule for Location/Category Scroll *** --- */
+.location-list-scroll,
+.category-list-scroll {
+    max-height: 300px; /* Fixed max height */
+    overflow-y: auto;
+    padding-right: 0.5rem; /* Space for the scrollbar */
+}
+/* --- *** END NEW RULE *** --- */
+
 
 /* Admin Table Styles */
 .table-header {
@@ -227,11 +258,11 @@ input[type=number] {
     border-bottom-color: #4f46e5; /* indigo-600 */
 }
 
-/* --- *** NEW STYLE FOR SMALLER FILTER DROPDOWNS *** --- */
+/* --- *** MODIFIED STYLE FOR ALIGNMENT *** --- */
 .form-select-filter {
     font-size: 0.875rem; /* 14px */
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
+    padding-top: 0.5rem;    /* 8px */
+    padding-bottom: 0.25rem; /* 4px (pb-1) */
 }
 /* --- End Underline Styles --- */
 
@@ -320,7 +351,7 @@ input[type=number] {
 }
 .dark #theme-toggle-button:hover {
     color: #a5b4fc; /* indigo-300 */
-    background-color: #334155; /* slate-7G00 */
+    background-color: #334155; /* slate-700 */
 }
 
 /* 4. Cards & Content (bg-white) */
