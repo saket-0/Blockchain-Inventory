@@ -224,6 +224,36 @@ input[type=number] {
 }
 /* --- End Underline Styles --- */
 
+/* --- NEW: Styles for Hash Copy Button --- */
+.hash-container {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem; /* 4px */
+    min-width: 0; /* Critical for flex + truncate */
+}
+.hash-container strong {
+    flex-shrink: 0; /* Prevents "Hash:" from shrinking */
+}
+.hash-container .truncate {
+    min-width: 0; /* Allows the hash string to be truncated */
+}
+.copy-hash-button {
+    flex-shrink: 0;
+    padding: 0.1rem 0.25rem; /* 4px 8px */
+    border-radius: 0.25rem; /* 4px */
+    transition: background-color 0.2s ease-in-out;
+    color: #64748b; /* slate-500 */
+    cursor: pointer;
+}
+.copy-hash-button:hover {
+    background-color: #e2e8f0; /* slate-200 */
+    color: #334155; /* slate-700 */
+}
+.copy-hash-button i {
+    display: block; /* Fixes icon alignment */
+}
+/* --- END NEW STYLES --- */
+
 
 /* --- Dark Mode Toggle Button --- */
 #theme-toggle-button {
@@ -474,4 +504,13 @@ input[type=number] {
 /* *** THIS IS THE FIX for Low Stock Hover *** */
 .dark .low-stock-item:hover {
     background-color: #1e293b; /* slate-800 */
+}
+
+/* --- 12. NEW: Dark Mode for Hash Copy Button --- */
+.dark .copy-hash-button {
+    color: #64748b; /* slate-500 */
+}
+.dark .copy-hash-button:hover {
+    background-color: #334155; /* slate-700 */
+    color: #e2e8f0; /* slate-200 */
 }

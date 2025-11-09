@@ -178,6 +178,7 @@ const createLedgerBlockElement = (block) => {
              transactionHtml = `Unknown transaction: ${txType}`;
     }
 
+    // --- THIS IS THE MODIFIED SECTION ---
     blockElement.innerHTML = `
         <div class="flex justify-between items-center mb-2">
             <h4 class="font-semibold text-sm text-indigo-700">Block #${block.index}</h4>
@@ -187,11 +188,25 @@ const createLedgerBlockElement = (block) => {
         <ul class="text-xs text-slate-600 space-y-1 mb-3">
             ${detailsHtml}
         </ul>
-        <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-md">
-            <p class="truncate"><strong>Hash:</strong> ${block.hash}</p>
-            <p class="truncate"><strong>Prev Hash:</strong> ${block.previousHash}</p>
+        <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-md space-y-1">
+            <div class="hash-container">
+                <strong class="flex-shrink-0">Hash:</strong>
+                <span class="truncate">${block.hash}</span>
+                <button class="copy-hash-button" data-hash="${block.hash}" title="Copy Hash">
+                    <i class="ph-bold ph-copy"></i>
+                </button>
+            </div>
+            <div class="hash-container">
+                <strong class="flex-shrink-0">Prev Hash:</strong>
+                <span class="truncate">${block.previousHash}</span>
+                <button class="copy-hash-button" data-hash="${block.previousHash}" title="Copy Previous Hash">
+                    <i class="ph-bold ph-copy"></i>
+                </button>
+            </div>
         </div>
     `;
+    // --- END MODIFIED SECTION ---
+    
     return blockElement;
 };
 

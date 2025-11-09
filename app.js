@@ -284,6 +284,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     // *** END NEW/MODIFIED SECTION ***
 
     appContent.addEventListener('click', async (e) => {
+        
+        // --- ADD THIS NEW HANDLER ---
+        if (e.target.closest('.copy-hash-button')) {
+            const button = e.target.closest('.copy-hash-button');
+            const hashToCopy = button.dataset.hash;
+            
+            if (!hashToCopy) {
+                return showError('No hash data found to copy.');
+            }
+
+            try {
+                await navigator.clipboard.writeText(hashToCopy);
+                showSuccess('Hash copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy hash:', err);
+                showError('Failed to copy. Please copy manually.');
+            }
+            return; // Stop further click propagation
+        }
+        // --- END NEW HANDLER ---
+
         if (e.target.closest('#back-to-list-button')) {
             navigateTo('products');
             return;
