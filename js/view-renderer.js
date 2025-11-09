@@ -3,13 +3,13 @@
 // --- View Rendering Functions ---
 
 const renderDashboard = async () => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
 
     let totalUnits = 0;
     let totalValue = 0;
     inventory.forEach(product => {
-        // *** ADDED CHECK ***
         if (product.is_deleted) return;
         
         let totalStock = 0;
@@ -51,7 +51,6 @@ const renderDashboard = async () => {
         activityContainer.style.display = 'none';
     }
 
-    // --- MODIFIED SECTION FOR PREDICTIVE LOW-STOCK ---
     const lowStockContainer = appContent.querySelector('#low-stock-container');
     if (lowStockContainer && permissionService.can('VIEW_PRODUCTS')) {
         const lowStockList = appContent.querySelector('#low-stock-list');
@@ -68,7 +67,7 @@ const renderDashboard = async () => {
             if (!response.ok) throw new Error('Failed to load predictions');
             
             const lowStockProducts = await response.json();
-            lowStockList.innerHTML = ''; // Clear loading message
+            lowStockList.innerHTML = ''; 
 
             if (lowStockProducts.length === 0) {
                 emptyMessage.style.display = 'block';
@@ -104,6 +103,7 @@ const renderDashboard = async () => {
 };
 
 
+// *** MODIFIED: Logic re-ordered in this function ***
 const renderProductList = () => {
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
@@ -111,47 +111,76 @@ const renderProductList = () => {
     const productGrid = appContent.querySelector('#product-grid');
     if (!productGrid) return;
     
+    // --- Get filter elements FIRST ---
     const searchInput = appContent.querySelector('#product-search-input');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const categoryFilterEl = appContent.querySelector('#product-category-filter');
+    const locationFilterEl = appContent.querySelector('#product-location-filter');
 
-    productGrid.innerHTML = ''; 
-    
+    // --- Show/hide Add Item container ---
     appContent.querySelector('#add-item-container').style.display = permissionService.can('CREATE_ITEM') ? 'block' : 'none';
     
-    // --- ADD THIS SECTION ---
-    // Populate the "Add Product" form dropdowns
+    // --- Populate the "Add Product" form dropdowns ---
     const addForm = appContent.querySelector('#add-item-form');
     if (addForm) {
         populateLocationDropdown(addForm.querySelector('#add-to'));
         populateCategoryDropdown(addForm.querySelector('#add-product-category'));
         
-        addForm.querySelector('#add-product-id').value = generateUniqueSku();
-        addForm.querySelector('#add-product-name').value = `New Product ${newProductCounter}`;
+        // Only set these if the form is truly empty (e.g., not mid-edit)
+        if (!addForm.querySelector('#add-product-id').value) {
+            addForm.querySelector('#add-product-id').value = generateUniqueSku();
+        }
+        if (!addForm.querySelector('#add-product-name').value) {
+            addForm.querySelector('#add-product-name').value = `New Product ${newProductCounter}`;
+        }
     }
-    // --- END ADD ---
+    
+    // --- *** FIX: Populate the FILTER dropdowns *BEFORE* reading their values *** ---
+    if (categoryFilterEl) {
+        populateCategoryDropdown(categoryFilterEl, true); 
+    }
+    if (locationFilterEl) {
+        populateLocationDropdown(locationFilterEl, true);
+    }
+    // --- *** END FIX *** ---
+
+    // --- Now, read the filter values (they will be correctly set to 'all') ---
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const categoryFilter = categoryFilterEl ? categoryFilterEl.value : 'all';
+    const locationFilter = locationFilterEl ? locationFilterEl.value : 'all';
+
+    // --- Clear grid ---
+    productGrid.innerHTML = ''; 
 
     let productsFound = 0;
 
-    // --- MODIFICATION: Reverse the inventory list ---
-    // Convert map entries to an array
     const productsArray = Array.from(inventory.entries());
-    // Reverse the array to show newest first
     productsArray.reverse(); 
 
-    // Iterate over the reversed array
     productsArray.forEach(([productId, product]) => {
-    // --- END MODIFICATION ---
-    
-        // *** NEW LINE: HIDE DELETED PRODUCTS ***
+        // 1. Check for deletion
         if (product.is_deleted) return;
-        // *** END NEW LINE ***
-
+        
+        // 2. Check Search Term
         const productName = product.productName.toLowerCase();
         const sku = productId.toLowerCase();
-
         if (searchTerm && !productName.includes(searchTerm) && !sku.includes(searchTerm)) {
             return;
         }
+
+        // 3. Check Category Filter
+        if (categoryFilter !== 'all' && product.category !== categoryFilter) {
+            return;
+        }
+
+        // 4. Check Location Filter
+        if (locationFilter !== 'all') {
+            const stockAtLocation = product.locations.get(locationFilter) || 0;
+            if (stockAtLocation <= 0) {
+                return;
+            }
+        }
+        // --- End Filter Logic ---
+
         productsFound++;
 
         const productCard = document.createElement('div');
@@ -178,22 +207,27 @@ const renderProductList = () => {
     });
 
     if (productsFound === 0) {
+        let message = 'No products found.';
         if (inventory.size === 0) {
-            productGrid.innerHTML = `<p class="text-slate-500 lg:col-span-3">No products in inventory. ${permissionService.can('CREATE_ITEM') ? 'Add one above!' : ''}</p>`;
-        } else {
-            productGrid.innerHTML = `<p class="text-slate-500 lg:col-span-3">No products found matching "${searchTerm}".</p>`;
+            message = `No products in inventory. ${permissionService.can('CREATE_ITEM') ? 'Add one above!' : ''}`;
+        } else if (searchTerm) {
+            message = `No products found matching "${searchTerm}".`;
+        } else if (categoryFilter !== 'all' || locationFilter !== 'all') {
+            message = 'No products match the current filters.';
         }
+        productGrid.innerHTML = `<p class="text-slate-500 lg:col-span-3">${message}</p>`;
     }
 };
 
 const renderProductDetail = (productId) => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
 
     const product = inventory.get(productId);
-    if (!product) {
-        showError(`Product ${productId} not found.`);
-        // Note: We can't call navigateTo here directly, but the app.js handler will.
+    if (!product || product.is_deleted) { // <-- Added check for deleted
+        showError(`Product ${productId} not found or has been deleted.`);
+        navigateTo('products'); // <-- Redirect to list
         return; 
     }
 
@@ -205,19 +239,15 @@ const renderProductDetail = (productId) => {
     appContent.querySelector('#detail-product-price').textContent = `₹${price.toFixed(2)}`;
     appContent.querySelector('#detail-product-category').textContent = product.category || 'Uncategorized';
 
-    // --- ADD THIS SECTION ---
-    // Populate the three dropdowns on this page
     populateLocationDropdown(appContent.querySelector('#update-location'));
     populateLocationDropdown(appContent.querySelector('#move-from-location'));
     populateLocationDropdown(appContent.querySelector('#move-to-location'));
-    // --- END ADD ---
 
     
     const stockLevelsDiv = appContent.querySelector('#detail-stock-levels');
     stockLevelsDiv.innerHTML = '';
     let totalStock = 0;
 
-    // --- REPLACE THE HARD-CODED ["Supplier", "Warehouse", "Retailer"] ---
     const allProductLocations = new Set(globalLocations.map(l => l.name));
     product.locations.forEach((qty, loc) => allProductLocations.add(loc));
 
@@ -228,7 +258,6 @@ const renderProductDetail = (productId) => {
         const locData = globalLocations.find(l => l.name === location);
         const isArchived = locData ? locData.is_archived : false;
 
-        // Only show if it has stock, or if it's a known, non-archived location
         if (qty > 0 || (locData && !isArchived)) {
             stockLevelsDiv.innerHTML += `
                 <div class="flex justify-between items-center text-sm">
@@ -237,11 +266,9 @@ const renderProductDetail = (productId) => {
                 </div>`;
         }
     });
-    // --- END REPLACEMENT ---
 
     appContent.querySelector('#detail-total-stock').textContent = `${totalStock} units`;
     
-    // *** MODIFIED/NEW SECTION ***
     const dangerZone = appContent.querySelector('#danger-zone-container');
     const updateStock = appContent.querySelector('#update-stock-container');
     const archivedMsg = appContent.querySelector('#product-archived-message');
@@ -252,24 +279,22 @@ const renderProductDetail = (productId) => {
     }
 
     if (product.is_deleted) {
-        if (updateStock) updateStock.style.display = 'none'; // Hide update forms
-        if (dangerZone) dangerZone.style.display = 'block'; // Ensure danger zone is visible
-        if (archivedMsg) archivedMsg.style.display = 'block'; // Show "Archived" message
-        if (deleteForm) deleteForm.style.display = 'none'; // Hide the delete button
+        if (updateStock) updateStock.style.display = 'none'; 
+        if (dangerZone) dangerZone.style.display = 'block'; 
+        if (archivedMsg) archivedMsg.style.display = 'block'; 
+        if (deleteForm) deleteForm.style.display = 'none'; 
     } else {
         if (updateStock) updateStock.style.display = permissionService.can('UPDATE_STOCK') ? 'block' : 'none';
         if (archivedMsg) archivedMsg.style.display = 'none';
         if (deleteForm) deleteForm.style.display = 'block';
     }
-    // *** END SECTION ***
 
     renderItemHistory(productId);
-    
-    // Call chart renderer (from chart-renderer.js)
     renderItemStockChart(productId);
 };
 
 const renderItemHistory = (productId) => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
     
@@ -292,13 +317,13 @@ const renderItemHistory = (productId) => {
 };
 
 const renderFullLedger = () => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
 
     const snapshotFormContainer = appContent.querySelector('#snapshot-form-container');
     if (snapshotFormContainer) {
         snapshotFormContainer.style.display = permissionService.can('VIEW_HISTORICAL_STATE') ? 'block' : 'none';
-        // Set default time to now
         snapshotFormContainer.querySelector('#snapshot-timestamp').value = new Date().toISOString().slice(0, 16);
     }
 
@@ -312,6 +337,7 @@ const renderFullLedger = () => {
 };
 
 const renderAdminPanel = async () => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
     
@@ -337,7 +363,6 @@ const renderAdminPanel = async () => {
             const row = document.createElement('tr');
             const isCurrentUser = user.id === currentUser.id;
             
-            // *** THIS IS THE FIX ***
             row.innerHTML = `
                 <td class="table-cell font-medium">${user.name}</td>
                 <td class="table-cell text-slate-500">${user.employee_id}</td>
@@ -376,7 +401,6 @@ const renderAdminPanel = async () => {
                     </button>
                 </td>
             `;
-            // *** END FIX ***
             tableBody.appendChild(row);
         });
 
@@ -385,12 +409,12 @@ const renderAdminPanel = async () => {
         tableBody.innerHTML = `<tr><td colspan="5" class="table-cell text-center text-red-600">Error loading users.</td></tr>`;
     }
 
-    // --- ADD THIS AT THE END OF THE FUNCTION ---
     await renderLocationManagement();
     await renderCategoryManagement();
 };
 
 const renderSnapshotView = (snapshotData) => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
     
@@ -412,9 +436,7 @@ const renderSnapshotView = (snapshotData) => {
     }
 
     inventoryMap.forEach((product, productId) => {
-        // *** NEW LINE: HIDE DELETED PRODUCTS ***
         if (product.is_deleted) return;
-        // *** END NEW LINE ***
 
         const productCard = document.createElement('div');
         productCard.className = 'product-card opacity-80'; 
@@ -441,8 +463,8 @@ const renderSnapshotView = (snapshotData) => {
 };
 
 
-// --- ADD THESE TWO NEW FUNCTIONS ---
 const renderLocationManagement = async () => {
+    // ... (This function is unchanged) ...
     const container = document.getElementById('location-list-container');
     if (!container) return;
     container.innerHTML = '<p class="text-sm text-slate-500">Loading...</p>';
@@ -453,7 +475,6 @@ const renderLocationManagement = async () => {
         const item = document.createElement('div');
         item.className = `flex items-center gap-2 ${loc.is_archived ? 'opacity-50' : ''}`;
         
-        // *** MODIFIED: Added data-old-name attribute ***
         item.innerHTML = `
             <input 
                 type="text" 
@@ -472,13 +493,13 @@ const renderLocationManagement = async () => {
                 <i class="ph-bold ph-trash"></i>
             </button>
         `;
-        // *** END MODIFICATION ***
         
         container.appendChild(item);
     });
 };
 
 const renderCategoryManagement = async () => {
+    // ... (This function is unchanged) ...
     const container = document.getElementById('category-list-container');
     if (!container) return;
     container.innerHTML = '<p class="text-sm text-slate-500">Loading...</p>';
@@ -489,7 +510,6 @@ const renderCategoryManagement = async () => {
         const item = document.createElement('div');
         item.className = `flex items-center gap-2 ${cat.is_archived ? 'opacity-50' : ''}`;
         
-        // *** MODIFIED: Added data-old-name attribute ***
         item.innerHTML = `
             <input 
                 type="text" 
@@ -508,28 +528,25 @@ const renderCategoryManagement = async () => {
                 <i class="ph-bold ph-trash"></i>
             </button>
         `;
-        // *** END MODIFICATION ***
         
         container.appendChild(item);
     });
 };
 
 
-// *** UPDATED FUNCTION: Render the Profile Page ***
 const renderProfilePage = async () => {
+    // ... (This function is unchanged) ...
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
     
-    // Show loading state
     appContent.querySelector('#profile-name').value = 'Loading...';
     appContent.querySelector('#profile-email').value = 'Loading...';
     const historyListEl = appContent.querySelector('#profile-activity-list');
-    const sessionListEl = appContent.querySelector('#profile-session-list'); // *** NEW ***
+    const sessionListEl = appContent.querySelector('#profile-session-list'); 
     historyListEl.innerHTML = '<p class="text-slate-500">Loading...</p>';
-    sessionListEl.innerHTML = '<p class="text-slate-500">Loading...</p>'; // *** NEW ***
+    sessionListEl.innerHTML = '<p class="text-slate-500">Loading...</p>'; 
     
     try {
-        // Fetch all profile data from the new endpoint
         const response = await fetch(`${API_BASE_URL}/api/users/me/profile-data`, {
             credentials: 'include'
         });
@@ -538,13 +555,11 @@ const renderProfilePage = async () => {
             throw new Error(err.message || 'Failed to load profile data');
         }
         const data = await response.json();
-        const { user, history, sessions } = data; // *** Destructure new 'sessions' data ***
+        const { user, history, sessions } = data; 
 
-        // 1. Populate forms
         appContent.querySelector('#profile-name').value = user.name;
         appContent.querySelector('#profile-email').value = user.email;
         
-        // 2. Render Transaction History "Commits"
         historyListEl.innerHTML = '';
         if (history.length === 0) {
             historyListEl.innerHTML = '<p class="text-slate-500">No transaction history found.</p>';
@@ -554,7 +569,6 @@ const renderProfilePage = async () => {
             });
         }
 
-        // 3. *** NEW: Render Session History ***
         sessionListEl.innerHTML = '';
         if (!sessions || sessions.length === 0) {
             sessionListEl.innerHTML = '<p class="text-slate-500">No session history found.</p>';
@@ -563,12 +577,9 @@ const renderProfilePage = async () => {
                 const sessionElement = document.createElement('div');
                 sessionElement.className = 'flex items-center justify-between text-sm p-2 bg-slate-50 rounded-md';
                 
-                // The 'expire' timestamp is when the session *will* expire or *did* expire.
-                // We can display this as the "Last Active" or "Expires" time.
                 const expireDate = new Date(session.expire);
                 const isExpired = expireDate < new Date();
 
-                // --- *** THIS IS THE UPDATED LINE *** ---
                 sessionElement.innerHTML = `
                     <div>
                         <p class="font-medium text-slate-700">
@@ -582,11 +593,9 @@ const renderProfilePage = async () => {
                         ${isExpired ? 'Expired' : 'Active'}
                     </span>
                 `;
-                // --- *** END OF UPDATE *** ---
                 sessionListEl.appendChild(sessionElement);
             });
         }
-        // *** END NEW SECTION ***
 
     } catch (error) {
         showError(error.message);

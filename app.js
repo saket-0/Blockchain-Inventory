@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentViewId = 'dashboard'; // Keep track of the current view
     // --- ** END NEW ** ---
     
+    
     // --- NAVIGATION & UI CONTROL ---
     const showLogin = () => {
         loginOverlay.style.display = 'flex';
@@ -391,6 +392,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userEmail = deleteButton.dataset.userEmail;
             await handleDeleteUser(userId, userName, userEmail);
         }
+        
+        // *** NEW: Handle filter reset button click ***
+        if (e.target.closest('#product-filter-reset')) {
+            const searchInput = appContent.querySelector('#product-search-input');
+            const categoryFilterEl = appContent.querySelector('#product-category-filter');
+            const locationFilterEl = appContent.querySelector('#product-location-filter');
+            
+            if (searchInput) searchInput.value = '';
+            if (categoryFilterEl) categoryFilterEl.value = 'all';
+            if (locationFilterEl) locationFilterEl.value = 'all';
+            
+            renderProductList(); // Re-render with reset values
+        }
+        // *** END NEW ***
     });
 
     appContent.addEventListener('change', async (e) => {
@@ -415,6 +430,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.target.classList.contains('category-name-input')) {
             await handleRenameCategory(e.target);
         }
+        
+        // *** NEW: Handle filter dropdown changes ***
+        if (e.target.id === 'product-category-filter' || e.target.id === 'product-location-filter') {
+            renderProductList();
+        }
+        // *** END NEW ***
     });
     
     

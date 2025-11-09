@@ -281,13 +281,22 @@ const populateLoginDropdown = async () => {
 };
 
 
-const populateLocationDropdown = (selectElement) => {
+// *** MODIFIED: Added 'includeAll' parameter ***
+const populateLocationDropdown = (selectElement, includeAll = false) => {
     if (!selectElement) return;
     const currentValue = selectElement.value;
     selectElement.innerHTML = '';
     
+    // *** NEW: Add "All" option if requested ***
+    if (includeAll) {
+        const allOption = document.createElement('option');
+        allOption.value = 'all';
+        allOption.textContent = 'All Locations';
+        selectElement.appendChild(allOption);
+    }
+    
     const locationsToShow = globalLocations.filter(loc => !loc.is_archived);
-    if (locationsToShow.length === 0) {
+    if (locationsToShow.length === 0 && !includeAll) {
         selectElement.innerHTML = '<option value="">No locations.</option>';
         return;
     }
@@ -299,20 +308,31 @@ const populateLocationDropdown = (selectElement) => {
         selectElement.appendChild(option);
     });
     
-    if (currentValue && locationsToShow.some(l => l.name === currentValue)) {
+    if (currentValue && (locationsToShow.some(l => l.name === currentValue) || (includeAll && currentValue === 'all'))) {
         selectElement.value = currentValue;
+    } else if (!includeAll) {
+        selectElement.value = locationsToShow[0]?.name || '';
     } else {
-        selectElement.value = locationsToShow[0].name;
+        selectElement.value = 'all'; // Default to "all" for filters
     }
 };
 
-const populateCategoryDropdown = (selectElement) => {
+// *** MODIFIED: Added 'includeAll' parameter ***
+const populateCategoryDropdown = (selectElement, includeAll = false) => {
     if (!selectElement) return;
     const currentValue = selectElement.value;
     selectElement.innerHTML = '';
+
+    // *** NEW: Add "All" option if requested ***
+    if (includeAll) {
+        const allOption = document.createElement('option');
+        allOption.value = 'all';
+        allOption.textContent = 'All Categories';
+        selectElement.appendChild(allOption);
+    }
     
     const categoriesToShow = globalCategories.filter(cat => !cat.is_archived);
-    if (categoriesToShow.length === 0) {
+    if (categoriesToShow.length === 0 && !includeAll) {
         selectElement.innerHTML = '<option value="">No categories.</option>';
         return;
     }
@@ -324,9 +344,11 @@ const populateCategoryDropdown = (selectElement) => {
         selectElement.appendChild(option);
     });
     
-    if (currentValue && categoriesToShow.some(c => c.name === currentValue)) {
+    if (currentValue && (categoriesToShow.some(c => c.name === currentValue) || (includeAll && currentValue === 'all'))) {
         selectElement.value = currentValue;
+    } else if (!includeAll) {
+        selectElement.value = categoriesToShow[0]?.name || '';
     } else {
-        selectElement.value = categoriesToShow[0].name;
+        selectElement.value = 'all'; // Default to "all" for filters
     }
 };
