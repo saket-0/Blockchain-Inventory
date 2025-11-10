@@ -47,11 +47,26 @@ module.exports = (pool) => {
             
             req.session.user = userForSession;
             
-            req.session.save((err) => {
+            // --- MODIFIED: Changed callback to async to log to permanent table ---
+            req.session.save(async (err) => { 
                 if (err) {
                     console.error('❌ Session save error:', err);
                     return res.status(500).json({ message: 'Failed to save session' });
                 }
+                
+                // *** NEW: Log to permanent login_history table ***
+                try {
+                    await pool.query(
+                        'INSERT INTO login_history (user_id, login_time) VALUES ($1, NOW())',
+                        [userForSession.id]
+                    );
+                    console.log(`✅ Login event recorded in permanent history table for ${userForSession.email}.`);
+                } catch (e) {
+                    // Log but do not fail the login process
+                    console.error('❌ Error recording permanent login history (Non-critical):', e);
+                }
+                // *** END NEW LOGIC ***
+                
                 console.log('✅ Login successful');
                 console.log('Session ID:', req.sessionID);
                 console.log('User:', userForSession.email);
@@ -75,7 +90,7 @@ module.exports = (pool) => {
         res.status(200).json(req.session.user);
     });
 
-    // --- *** THIS IS THE UPDATED LOGOUT FUNCTION *** ---
+    // --- THIS IS THE UPDATED LOGOUT FUNCTION ---
     // POST /api/auth/logout
     router.post('/logout', (req, res) => {
         console.log('🚪 Logout request');
@@ -110,7 +125,7 @@ module.exports = (pool) => {
             res.status(200).json({ message: 'Logout successful' });
         }
     });
-    // --- *** END OF UPDATE *** ---
+    // --- END OF UPDATE ---
     
     // Return the router
     return router;

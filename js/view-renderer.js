@@ -610,6 +610,7 @@ const renderProfilePage = async () => {
             throw new Error(err.message || 'Failed to load profile data');
         }
         const data = await response.json();
+        // 'sessions' is now the merged list: [{ login_time, logout_time, status, isCurrent }]
         const { user, history, sessions } = data; 
 
         appContent.querySelector('#profile-name').value = user.name;
@@ -626,30 +627,49 @@ const renderProfilePage = async () => {
 
         sessionListEl.innerHTML = '';
         if (!sessions || sessions.length === 0) {
-            sessionListEl.innerHTML = '<p class="text-slate-500">No session history found.</p>';
+            sessionListEl.innerHTML = '<p class="text-slate-500">No login history found.</p>';
         } else {
-            sessions.forEach(session => {
+            // *** MODIFIED: Logic for displaying Active/Logged Out status ***
+            sessions.forEach(login => {
                 const sessionElement = document.createElement('div');
                 sessionElement.className = 'flex items-center justify-between text-sm p-2 bg-slate-50 rounded-md';
                 
-                const expireDate = new Date(session.expire);
-                const isExpired = expireDate < new Date();
+                const loginDate = new Date(login.login_time);
+                const isLoggedOut = login.status === 'Logged Out';
+                
+                const statusText = login.isCurrent ? 'Current Session' : (isLoggedOut ? 'Logged Out' : 'Active');
+                const statusColor = login.isCurrent ? 'text-green-600 bg-green-100' : (isLoggedOut ? 'text-slate-500 bg-slate-100' : 'text-green-600 bg-green-100');
+                
+                let timeDisplayHtml = `<p class="text-xs text-slate-500">Login: ${loginDate.toLocaleString()}</p>`;
+                
+                if (login.logout_time) {
+                    const logoutDate = new Date(login.logout_time);
+                    if (isLoggedOut) {
+                        timeDisplayHtml += `<p class="text-xs text-slate-500">Logout: ${logoutDate.toLocaleString()}</p>`;
+                    } else {
+                        // If it's 'Active' (but not current), it's an old active session. Show expiry.
+                        // If it's the *current* session, show expiry.
+                        timeDisplayHtml += `<p class="text-xs text-slate-500">Expires: ${logoutDate.toLocaleString()}</p>`;
+                    }
+                } else {
+                    // This handles the case where the session was purged (logout_time is null)
+                    timeDisplayHtml += `<p class="text-xs text-slate-500">Logout: (Session data purged)</p>`;
+                }
 
                 sessionElement.innerHTML = `
                     <div>
                         <p class="font-medium text-slate-700">
-                            ${isExpired ? 'Session Expired' : 'Session Expires'}
+                            ${login.isCurrent ? 'This Session' : 'Past Session'}
                         </p>
-                        <p class="text-xs text-slate-500">
-                            ${expireDate.toLocaleString()}
-                        </p>
+                        ${timeDisplayHtml}
                     </div>
-                    <span class="text-xs font-medium ${isExpired ? 'text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' : 'text-green-600 bg-green-100 px-2 py-0.5 rounded-full'}">
-                        ${isExpired ? 'Expired' : 'Active'}
+                    <span class="text-xs font-medium ${statusColor} px-2 py-0.5 rounded-full">
+                        ${statusText}
                     </span>
                 `;
                 sessionListEl.appendChild(sessionElement);
             });
+            // *** END MODIFIED ***
         }
 
     } catch (error) {

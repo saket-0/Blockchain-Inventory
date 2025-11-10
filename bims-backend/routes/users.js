@@ -29,7 +29,6 @@ module.exports = (pool) => {
             const userId = req.session.user.id;
             
             // 1. Get user's transaction history
-            // We search for the 'adminUserId' which is injected into *all* transactions by the backend
             const historyResult = await pool.query(
                 `SELECT index, timestamp, transaction, previous_hash AS "previousHash", hash 
                  FROM blockchain 
@@ -40,25 +39,70 @@ module.exports = (pool) => {
             
             const history = historyResult.rows;
 
-            // 2. *** NEW: Get user's session history ***
-            // We query the 'user_sessions' table created by 'connect-pg-simple'
-            // We look inside the 'sess' JSONB column for a 'user' object
-            // where the 'id' field matches the current user's ID.
-            const sessionResult = await pool.query(
-                `SELECT expire FROM user_sessions 
-                 WHERE (sess->'user'->>'id')::integer = $1 
-                 ORDER BY expire DESC
-                 LIMIT 10`, // Get the 10 most recent sessions
+            // 2. *** MODIFIED: Get user's PERMANENT login history ***
+            const loginHistoryResult = await pool.query(
+                `SELECT id, login_time FROM login_history 
+                 WHERE user_id = $1 
+                 ORDER BY login_time DESC
+                 LIMIT 10`, // Get the 10 most recent logins
                 [userId]
             );
-            const sessions = sessionResult.rows;
-            // *** END NEW SECTION ***
+            const logins = loginHistoryResult.rows;
+
+            // 3. *** NEW: Get temporary SESSION data to find 'Active' status and logout time ***
+            const sessionResult = await pool.query(
+                `SELECT sid, sess, expire FROM user_sessions 
+                 WHERE (sess->'user'->>'id')::integer = $1 
+                 ORDER BY expire DESC`,
+                [userId]
+            );
+            const allSessions = sessionResult.rows;
             
-            // Return user, their history, and their sessions
+            // 4. *** NEW: Merge Login History with Session Data ***
+            const now = new Date();
+            const mergedSessions = logins.map(login => {
+                // Find the session that corresponds to this login.
+                // It's the session that expired *closest to and after* the login time.
+                let correspondingSession = null;
+                let minDiff = Infinity;
+
+                for (const session of allSessions) {
+                    const expireTime = new Date(session.expire);
+                    const loginTime = new Date(login.login_time);
+
+                    if (expireTime > loginTime) {
+                        const diff = expireTime.getTime() - loginTime.getTime();
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            correspondingSession = session;
+                        }
+                    }
+                }
+
+                if (correspondingSession) {
+                    const isActive = new Date(correspondingSession.expire) > now;
+                    return {
+                        login_time: login.login_time,
+                        status: isActive ? 'Active' : 'Logged Out',
+                        logout_time: correspondingSession.expire, // This is the session's expiry time
+                        isCurrent: isActive && correspondingSession.sid === req.sessionID // Flag the *current* session
+                    };
+                }
+
+                // If no session was found (e.g., purged from DB), mark as logged out
+                return {
+                    login_time: login.login_time,
+                    status: 'Logged Out',
+                    logout_time: null, // No expiry time available
+                    isCurrent: false
+                };
+            });
+            
+            // Return user, their history, and their merged login status (passed as 'sessions')
             res.status(200).json({
                 user: req.session.user,
                 history: history,
-                sessions: sessions // *** NEWLY ADDED ***
+                sessions: mergedSessions 
             });
 
         } catch (e) {
