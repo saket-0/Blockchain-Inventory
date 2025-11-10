@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderProductList();
         }
 
-        // *** NEW: Ledger Filters (Text and Date) ***
+        // *** MODIFIED: Ledger Filters (Text and Date) ***
         if (e.target.id === 'ledger-search-input' || e.target.id === 'ledger-date-from' || e.target.id === 'ledger-date-to') {
             renderFullLedger();
         }
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ... (focus event listeners as before) ...
     appContent.addEventListener('focus', (e) => {
         if (e.target.tagName === 'INPUT') {
-            if (e.target.id === 'product-search-input') {
+            if (e.target.id === 'product-search-input' || e.target.id === 'ledger-search-input') { // <-- ADDED ledger search
                 return;
             }
             if (e.target.type === 'datetime-local' || e.target.type === 'date') { // <-- ADDED 'date'
@@ -435,18 +435,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderProductList(); // Re-render with reset values
         }
         
-        // *** NEW: Handle LEDGER filter reset button click ***
+        // *** MODIFIED: Handle LEDGER filter reset button click ***
         if (e.target.closest('#ledger-filter-reset')) {
             appContent.querySelector('#ledger-search-input').value = '';
             appContent.querySelector('#ledger-user-filter').value = 'all';
             appContent.querySelector('#ledger-category-filter').value = 'all';
             appContent.querySelector('#ledger-location-filter').value = 'all';
+            appContent.querySelector('#ledger-tx-type-filter').value = 'all'; // <-- ADDED
             appContent.querySelector('#ledger-date-from').value = '';
             appContent.querySelector('#ledger-date-to').value = '';
             
             renderFullLedger(); // Re-render with reset values
         }
-        // *** END NEW ***
+        // *** END MODIFICATION ***
     });
 
     appContent.addEventListener('change', async (e) => {
@@ -477,11 +478,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderProductList();
         }
         
-        // *** NEW: Handle LEDGER filter dropdown changes ***
-        if (e.target.id === 'ledger-user-filter' || e.target.id === 'ledger-category-filter' || e.target.id === 'ledger-location-filter') {
+        // *** MODIFIED: Handle LEDGER filter dropdown changes ***
+        if (e.target.id === 'ledger-user-filter' || e.target.id === 'ledger-category-filter' || e.target.id === 'ledger-location-filter' || e.target.id === 'ledger-tx-type-filter') {
             renderFullLedger();
         }
-        // *** END NEW ***
+        // *** END MODIFICATION ***
     });
     
     

@@ -377,7 +377,10 @@ const renderFullLedger = () => {
     const snapshotFormContainer = appContent.querySelector('#snapshot-form-container');
     if (snapshotFormContainer) {
         snapshotFormContainer.style.display = permissionService.can('VIEW_HISTORICAL_STATE') ? 'block' : 'none';
-        snapshotFormContainer.querySelector('#snapshot-timestamp').value = new Date().toISOString().slice(0, 16);
+        const timestampInput = snapshotFormContainer.querySelector('#snapshot-timestamp');
+        if (!timestampInput.value) { // Only set if empty
+            timestampInput.value = new Date().toISOString().slice(0, 16);
+        }
     }
 
     const verifyChainContainer = appContent.querySelector('#verify-chain-container');
@@ -389,12 +392,14 @@ const renderFullLedger = () => {
     populateUserDropdown(appContent.querySelector('#ledger-user-filter'), true);
     populateCategoryDropdown(appContent.querySelector('#ledger-category-filter'), true);
     populateLocationDropdown(appContent.querySelector('#ledger-location-filter'), true);
+    // The TX Type dropdown is hardcoded in HTML, no population needed.
 
     // --- 3. GET ALL FILTER VALUES ---
     const searchTerm = (appContent.querySelector('#ledger-search-input')?.value || '').toLowerCase();
     const userFilter = appContent.querySelector('#ledger-user-filter')?.value || 'all';
     const categoryFilter = appContent.querySelector('#ledger-category-filter')?.value || 'all';
     const locationFilter = appContent.querySelector('#ledger-location-filter')?.value || 'all';
+    const txTypeFilter = appContent.querySelector('#ledger-tx-type-filter')?.value || 'all'; // <-- ADDED
     const dateFrom = appContent.querySelector('#ledger-date-from')?.value;
     const dateTo = appContent.querySelector('#ledger-date-to')?.value;
     
@@ -426,6 +431,7 @@ const renderFullLedger = () => {
         }
 
         // Filter 3: User
+        // Note: 'adminUserId' is the standardized field for the acting user's ID
         if (userFilter !== 'all' && tx.adminUserId != userFilter) {
             return false;
         }
@@ -440,13 +446,19 @@ const renderFullLedger = () => {
         
         // Filter 5: Location
         if (locationFilter !== 'all') {
-            const txLocations = [tx.location, tx.fromLocation, tx.toLocation];
+            // Check all possible location fields
+            const txLocations = [tx.location, tx.fromLocation, tx.toLocation, tx.targetName];
             if (!txLocations.includes(locationFilter)) {
                 return false;
             }
         }
+
+        // Filter 6: Transaction Type (NEW)
+        if (txTypeFilter !== 'all' && tx.txType !== txTypeFilter) {
+            return false;
+        }
         
-        // Filter 6: Text Search
+        // Filter 7: Text Search
         if (searchTerm) {
             // Create a searchable string from the transaction
             let searchableText = `${tx.txType} ${tx.itemSku} ${tx.itemName} ${tx.adminUserName} ${tx.targetUser} ${tx.targetEmail}`;
@@ -459,7 +471,7 @@ const renderFullLedger = () => {
         return true; // If all filters pass, include the block
     });
 
-    // --- 5. RENDER THE FILTEreD BLOCKS ---
+    // --- 5. RENDER THE FILTERED BLOCKS ---
     if (filteredBlockchain.length === 0) {
         ledgerDisplay.innerHTML = '<p class="text-slate-500">No transactions match the current filters.</p>';
     } else {
@@ -474,6 +486,7 @@ const renderFullLedger = () => {
         resultsCountEl.textContent = `Showing ${filteredBlockchain.length} matching transactions (Newest block on top).`;
     }
 };
+
 
 const renderAdminPanel = async () => {
     // ... (This function is unchanged) ...
