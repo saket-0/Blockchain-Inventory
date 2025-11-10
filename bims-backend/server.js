@@ -85,7 +85,11 @@ const sessionMiddleware = session({
     saveUninitialized: false,
     proxy: true,
     cookie: {
-        maxAge: 24 * 60 * 60 * 1000, // 5 minutes
+        // *** THIS IS THE FIX ***
+        // The old code said 24 * 60 * 60 * 1000 (24 hours)
+        // This is 5 * 60 * 1000 (5 minutes)
+        maxAge: 5 * 60 * 1000, 
+        // *** END OF FIX ***
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
@@ -93,7 +97,7 @@ const sessionMiddleware = session({
         domain: undefined
     },
     name: 'bims.sid',
-    rolling: true
+    rolling: true // This resets the 5-minute timer on every API call
 });
 app.use(sessionMiddleware); // Use the middleware
 
