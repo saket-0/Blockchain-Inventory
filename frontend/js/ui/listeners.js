@@ -8,9 +8,10 @@ import { renderProductList } from './renderers/product-list.js';
 import { renderFullLedger } from './renderers/ledger.js';
 import { toggleProductEditMode, renderProductDetail } from './renderers/product-detail.js';
 
-// vvv IMPORT THE NEW MODAL vvv
+// vvv IMPORT THE NEW MODAL AND THE FILE PROCESSOR vvv
 import { openImageModal } from './components/image-modal.js';
-// ^^^ IMPORT THE NEW MODAL ^^^
+import { processFileToDataURL } from '../services/image-uploader.js';
+// ^^^ END IMPORTS ^^^
 
 // --- Import all handler functions ---
 import {
@@ -57,7 +58,6 @@ export function initAppListeners() {
             localStorage.setItem('bims_theme', newTheme);
             
             // applyTheme is global via script tag in index.html
-            // If theme.js were a module, we'd import and call applyTheme(newTheme)
             applyTheme(newTheme);
         });
     }
@@ -238,20 +238,16 @@ export function initAppListeners() {
             }
         }
 
-        // vvv REPLACED OLD LISTENERS WITH THESE NEW ONES vvv
-        if (e.target.closest('#add-image-preview-button')) {
+        // vvv THIS IS THE NEW CLICK LOGIC vvv
+        if (e.target.closest('#add-image-upload-button')) {
             e.preventDefault();
-            const targetInput = appContent.querySelector('#add-image-url');
-            const previewButton = appContent.querySelector('#add-image-preview-button');
-            openImageModal(targetInput, previewButton, targetInput.value);
+            appContent.querySelector('#add-image-file-input')?.click(); // Open file dialog
         }
-        if (e.target.closest('#edit-image-preview-button')) {
+        if (e.target.closest('#edit-image-upload-button')) {
             e.preventDefault();
-            const targetInput = appContent.querySelector('#edit-product-image-url');
-            const previewButton = appContent.querySelector('#edit-image-preview-button');
-            openImageModal(targetInput, previewButton, targetInput.value);
+            appContent.querySelector('#edit-image-file-input')?.click(); // Open file dialog
         }
-        // ^^^ END OF REPLACEMENT ^^^
+        // ^^^ END OF NEW CLICK LOGIC ^^^
     });
 
     // --- CHANGES & INPUTS ---
@@ -274,9 +270,36 @@ export function initAppListeners() {
             renderFullLedger();
         }
 
-        // vvv REMOVED THE OLD 'add-image-file-input' LISTENERS vvv
-        // ... (Old file input listeners are gone) ...
-        // ^^^ END OF REMOVAL ^^^
+        // vvv THIS IS THE NEW CHANGE LOGIC vvv
+        if (e.target.id === 'add-image-file-input') {
+            const file = e.target.files[0];
+            const targetUrlInput = appContent.querySelector('#add-image-url');
+            if (file && targetUrlInput) {
+                try {
+                    const dataUrl = await processFileToDataURL(file);
+                    // Open modal on 'upload' tab with the file preview
+                    openImageModal(targetUrlInput, { initialTab: 'upload', previewUrl: dataUrl });
+                } catch (error) {
+                    showError(error.message);
+                }
+                e.target.value = null; // Clear file input
+            }
+        }
+        if (e.target.id === 'edit-image-file-input') {
+            const file = e.target.files[0];
+            const targetUrlInput = appContent.querySelector('#edit-product-image-url');
+            if (file && targetUrlInput) {
+                try {
+                    const dataUrl = await processFileToDataURL(file);
+                    // Open modal on 'upload' tab with the file preview
+                    openImageModal(targetUrlInput, { initialTab: 'upload', previewUrl: dataUrl });
+                } catch (error) {
+                    showError(error.message);
+                }
+                e.target.value = null; // Clear file input
+            }
+        }
+        // ^^^ END OF NEW CHANGE LOGIC ^^^
     });
 
     appContent.addEventListener('input', (e) => {
@@ -286,13 +309,35 @@ export function initAppListeners() {
         }
     });
 
+    // vvv THIS IS THE NEW PASTE LOGIC vvv
+    appContent.addEventListener('paste', (e) => {
+        let targetUrlInput;
+        if (e.target.id === 'add-image-url') {
+            targetUrlInput = e.target;
+        } else if (e.target.id === 'edit-product-image-url') {
+            targetUrlInput = e.target;
+        } else {
+            return; // Not a target input, do nothing
+        }
+
+        e.preventDefault();
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        
+        if (pastedText) {
+            // Open modal on 'url' tab with the pasted text
+            openImageModal(targetUrlInput, { initialTab: 'url', previewUrl: pastedText });
+        }
+    });
+    // ^^^ END OF NEW PASTE LOGIC ^^^
+
     // --- FOCUS (for select-all-on-focus) ---
     appContent.addEventListener('focus', (e) => {
         if (e.target.tagName === 'INPUT' && (
             e.target.type === 'text' || 
             e.target.type === 'number' || 
             e.target.type === 'email' || 
-            e.target.type === 'password'
+            e.target.type === 'password' ||
+            e.target.type === 'url' // Added URL type
         )) {
             // Exclude search and date inputs
             if (e.target.id !== 'product-search-input' && 

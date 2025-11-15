@@ -3,9 +3,8 @@ import { processFileToDataURL } from '../../services/image-uploader.js';
 import { showError } from './notifications.js';
 
 let modalElement = null;
-let currentTargetInput = null;
-let currentPreviewButton = null;
-let currentImageUrl = ''; // The URL currently in the preview
+let currentTargetInput = null; // The <input type="url"> on the form
+let currentImageUrl = ''; // The URL/Base64 string currently in the preview
 
 // Helper function to fetch and inject the modal HTML
 const loadModalHTML = async () => {
@@ -52,7 +51,7 @@ const switchTab = (tabName) => {
     modalElement.querySelectorAll('.image-modal-tab-content').forEach(content => {
         content.classList.toggle('active', content.id === `image-modal-content-${tabName}`);
     });
-    // Clear preview when switching tabs
+    // Clear preview and URL input when switching tabs
     showPreview('');
     modalElement.querySelector('#image-modal-url-input').value = '';
 };
@@ -103,13 +102,9 @@ const attachModalListeners = () => {
         
         // Save button
         if (e.target.closest('#image-modal-save-btn')) {
-            if (currentImageUrl && currentTargetInput && currentPreviewButton) {
-                // 1. Set the value of the hidden form input
+            if (currentImageUrl && currentTargetInput) {
+                // Set the value of the hidden form input
                 currentTargetInput.value = currentImageUrl;
-                
-                // 2. Update the preview button on the form
-                currentPreviewButton.innerHTML = `<img src="${currentImageUrl}" alt="Product Image Preview">`;
-                
                 closeImageModal();
             }
         }
@@ -140,21 +135,30 @@ const attachModalListeners = () => {
     });
 };
 
-// Public function to open the modal
-export const openImageModal = async (targetInput, targetPreviewButton, initialImageUrl) => {
+/**
+ * Public function to open the modal.
+ * @param {HTMLInputElement} targetInput The form's URL input to update on save.
+ * @param {object} options
+ * @param {'upload' | 'url'} options.initialTab The tab to open.
+ * @param {string} options.previewUrl The URL (http or Base64) to show in the preview.
+ */
+export const openImageModal = async (targetInput, options = {}) => {
     modalElement = await loadModalHTML();
     if (!modalElement) return;
 
     currentTargetInput = targetInput;
-    currentPreviewButton = targetPreviewButton;
-    
-    // Reset modal state
-    switchTab('upload');
-    modalElement.querySelector('#image-modal-url-input').value = '';
+    const { initialTab = 'upload', previewUrl = '' } = options;
+
+    // Reset modal state and set to desired tab
+    switchTab(initialTab);
     
     // Set initial preview if one exists
-    if (initialImageUrl) {
-        showPreview(initialImageUrl);
+    if (previewUrl) {
+        showPreview(previewUrl);
+        // If it's the URL tab, also populate the input
+        if (initialTab === 'url') {
+            modalElement.querySelector('#image-modal-url-input').value = previewUrl;
+        }
     } else {
         showPreview('');
     }
@@ -174,6 +178,5 @@ export const closeImageModal = () => {
         modalElement.style.display = 'none';
     }
     currentTargetInput = null;
-    currentPreviewButton = null;
     currentImageUrl = '';
 };

@@ -123,7 +123,7 @@ input[type=number] {
     transition: all 0.2s ease-in-out;
 }
 
-/* STYLES FOR NEW UPLOAD BUTTON */
+/* vvv THIS IS THE REVERTED STYLE FOR THE SMALL BUTTON vvv */
 .form-upload-button {
     flex-shrink: 0;
     padding: 0.25rem 0.5rem; /* 4px 8px */
