@@ -1,3 +1,4 @@
+// Lap/bims-backend/routes/blockchain.js
 const express = require('express');
 const router = express.Router();
 
@@ -46,7 +47,10 @@ const ADMIN_TRANSACTION_TYPES = [
     'ADMIN_RENAME_CATEGORY',
     'ADMIN_ARCHIVE_CATEGORY',
     // *** NEWLY ADDED ***
-    'ADMIN_EDIT_ITEM'
+    'ADMIN_EDIT_ITEM',
+    // --- NEW RESTORE TYPES ---
+    'ADMIN_RESTORE_LOCATION',
+    'ADMIN_RESTORE_CATEGORY'
 ];
 // *** END MODIFICATION ***
 

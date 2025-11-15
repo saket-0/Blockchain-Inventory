@@ -543,7 +543,7 @@ const handleRestoreLocation = async (name) => {
 
         // *** ADDED: Log to blockchain (to trigger SSE refresh) ***
         await logAdminActionToBlockchain({
-            txType: "ADMIN_ADD_LOCATION", // Same txType as add
+            txType: "ADMIN_RESTORE_LOCATION", // <-- MODIFIED TXTYPE
             targetId: data.id,
             targetName: data.name
         });
@@ -673,7 +673,7 @@ const handleRestoreCategory = async (name) => {
         
         // *** ADDED: Log to blockchain (to trigger SSE refresh) ***
         await logAdminActionToBlockchain({
-            txType: "ADMIN_ADD_CATEGORY", // Same txType as add
+            txType: "ADMIN_RESTORE_CATEGORY", // <-- MODIFIED TXTYPE
             targetId: data.id,
             targetName: data.name
         });

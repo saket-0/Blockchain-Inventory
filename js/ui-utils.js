@@ -160,6 +160,15 @@ const createLedgerBlockElement = (block) => {
             detailsHtml = `<li>Location: <strong>${targetName}</strong> (ID: ${targetId})</li>
                            ${actorHtml}`;
             break;
+        
+        // --- NEW CASE ---
+        case 'ADMIN_RESTORE_LOCATION':
+            transactionHtml = `<span class="font-semibold text-green-600">ADMIN RESTORE LOCATION</span>`;
+            detailsHtml = `<li>Location: <strong>${targetName}</strong> (ID: ${targetId})</li>
+                           ${actorHtml}`;
+            break;
+        // --- END NEW CASE ---
+
         case 'ADMIN_RENAME_LOCATION':
             transactionHtml = `<span class="font-semibold text-purple-600">ADMIN RENAME LOCATION</span>`;
             detailsHtml = `<li>Location ID: <strong>${targetId}</strong></li>
@@ -177,6 +186,15 @@ const createLedgerBlockElement = (block) => {
             detailsHtml = `<li>Category: <strong>${targetName}</strong> (ID: ${targetId})</li>
                            ${actorHtml}`;
             break;
+
+        // --- NEW CASE ---
+        case 'ADMIN_RESTORE_CATEGORY':
+            transactionHtml = `<span class="font-semibold text-green-600">ADMIN RESTORE CATEGORY</span>`;
+            detailsHtml = `<li>Category: <strong>${targetName}</strong> (ID: ${targetId})</li>
+                           ${actorHtml}`;
+            break;
+        // --- END NEW CASE ---
+
         case 'ADMIN_RENAME_CATEGORY':
             transactionHtml = `<span class="font-semibold text-purple-600">ADMIN RENAME CATEGORY</span>`;
             detailsHtml = `<li>Category ID: <strong>${targetId}</strong></li>

@@ -98,19 +98,39 @@
                             <label for="ledger-tx-type-filter" class="block text-sm font-medium text-slate-700">Tx Type</label>
                             <select id="ledger-tx-type-filter" class="w-full form-select-underline form-select-filter">
                                 <option value="all">All Types</option>
-                                <option value="CREATE_ITEM">Create Item</option>
-                                <option value="STOCK_IN">Stock In</option>
-                                <option value="STOCK_OUT">Stock Out</option>
-                                <option value="MOVE">Move Stock</option>
-                                <option value="ADMIN_EDIT_ITEM">Edit Item</option>
-                                <option value="DELETE_ITEM">Delete Item</option>
-                                <option value="ADMIN_CREATE_USER">Admin: Create User</option>
-                                <option value="ADMIN_EDIT_ROLE">Admin: Edit Role</option>
-                                <option value="ADMIN_DELETE_USER">Admin: Delete User</option>
+                                <optgroup label="Inventory Actions">
+                                    <option value="CREATE_ITEM">Create Item</option>
+                                    <option value="STOCK_IN">Stock In</option>
+                                    <option value="STOCK_OUT">Stock Out</option>
+                                    <option value="MOVE">Move Stock</option>
+                                    <option value="ADMIN_EDIT_ITEM">Edit Item Details</option>
+                                    <option value="DELETE_ITEM">Delete Item</option>
+                                </optgroup>
+                                <optgroup label="User Profile Actions">
+                                    <option value="USER_UPDATE_PROFILE">User: Update Profile</option>
+                                    <option value="USER_CHANGE_PASSWORD">User: Change Password</option>
+                                </optgroup>
+                                <optgroup label="Admin: User Management">
+                                    <option value="ADMIN_CREATE_USER">Admin: Create User</option>
+                                    <option value="ADMIN_EDIT_ROLE">Admin: Edit Role</option>
+                                    <option value="ADMIN_EDIT_EMAIL">Admin: Edit Email</option>
+                                    <option value="ADMIN_DELETE_USER">Admin: Delete User</option>
+                                </optgroup>
+                                <optgroup label="Admin: Location Management">
+                                    <option value="ADMIN_ADD_LOCATION">Admin: Add Location</option>
+                                    <option value="ADMIN_RESTORE_LOCATION">Admin: Restore Location</option>
+                                    <option value="ADMIN_RENAME_LOCATION">Admin: Rename Location</option>
+                                    <option value="ADMIN_ARCHIVE_LOCATION">Admin: Archive Location</option>
+                                </optgroup>
+                                <optgroup label="Admin: Category Management">
+                                    <option value="ADMIN_ADD_CATEGORY">Admin: Add Category</option>
+                                    <option value="ADMIN_RESTORE_CATEGORY">Admin: Restore Category</option>
+                                    <option value="ADMIN_RENAME_CATEGORY">Admin: Rename Category</option>
+                                    <option value="ADMIN_ARCHIVE_CATEGORY">Admin: Archive Category</option>
+                                </optgroup>
                             </select>
                         </div>
-
-                    </form>
+                        </form>
                 </div>
                 </div>
         </div>
