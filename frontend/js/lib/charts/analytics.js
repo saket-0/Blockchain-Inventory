@@ -27,10 +27,12 @@ export const renderAnalyticsPage = async () => {
         renderTopMoversList(kpis.topMovers);
         renderHighValueList(kpis.highValueItems);
         renderStaleInventoryList(kpis.staleInventory);
+        renderMostActiveUsers(kpis.mostActiveUsers); // <-- ADDED
         
         // Render charts from KPI data
         renderTxMixLineChart(kpis.txMixLineData, kpis.dateLabels);
         renderLocationActivityChart(kpis.locationActivityData, kpis.dateLabels);
+        renderStockValueChart(kpis.stockValueLineData, kpis.dateLabels); // <-- ADDED
 
     } catch (error) {
         console.error("Failed to render analytics page:", error);
@@ -99,6 +101,28 @@ const renderStaleInventoryList = (staleInventory) => {
         `;
     });
 };
+
+// vvv NEW KPI RENDERER vvv
+const renderMostActiveUsers = (activeUsers) => {
+    const container = document.getElementById('analytics-active-users');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!activeUsers || activeUsers.length === 0) {
+        container.innerHTML = '<p class="text-slate-500">No user activity in 30 days.</p>';
+        return;
+    }
+    
+    activeUsers.forEach(user => {
+        container.innerHTML += `
+            <div class="flex justify-between items-center">
+                <span class="truncate" title="${user.name}">${user.name}</span>
+                <span class="font-semibold text-indigo-600">${user.count} actions</span>
+            </div>
+        `;
+    });
+};
+// ^^^ END NEW RENDERER ^^^
 
 
 // --- Chart Renderers (Local Data) ---
@@ -331,10 +355,10 @@ const renderTxMixLineChart = (data, labels) => {
             plugins: { legend: { position: 'top' } },
             scales: { 
                 y: { 
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1 // Ensure we only count in whole numbers
-                    }
+                    beginAtZero: true
+                    // vvv MODIFICATION vvv
+                    // Removed stepSize: 1, as this chart now shows quantity, not count
+                    // ^^^ END MODIFICATION ^^^
                 } 
             }
         }
@@ -375,7 +399,7 @@ const renderLocationActivityChart = (data, labels) => {
                 y: { 
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 1 // Ensure we only count in whole numbers
+                        stepSize: 1 // This chart is still by COUNT, so this is correct
                     }
                 } 
             }
@@ -383,3 +407,53 @@ const renderLocationActivityChart = (data, labels) => {
     });
     addChart(lineChart);
 };
+
+// vvv NEW CHART RENDERER vvv
+const renderStockValueChart = (data, labels) => {
+    const ctx = document.getElementById('stock-value-chart')?.getContext('2d');
+    if (!ctx || !data || !labels) return;
+
+    const datasets = [
+        {
+            label: 'Value In (Create/Stock-In)',
+            data: data['STOCK_IN'] || [],
+            borderColor: '#10b981', // green-500
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.1
+        },
+        {
+            label: 'Value Out (Stock-Out)',
+            data: data['STOCK_OUT'] || [],
+            borderColor: '#ef4444', // red-500
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            fill: true,
+            tension: 0.1
+        }
+    ];
+
+    const valueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        // Format as currency
+                        callback: function(value, index, values) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                } 
+            }
+        }
+    });
+    addChart(valueChart);
+};
+// ^^^ END NEW RENDERER ^^^

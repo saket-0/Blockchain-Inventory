@@ -55,9 +55,11 @@ module.exports = (pool) => {
                     topMovers: [],
                     highValueItems: [],
                     staleInventory: [],
+                    mostActiveUsers: [], // ADDED
                     dateLabels: [],
                     txMixLineData: {},
-                    locationActivityData: {}
+                    locationActivityData: {},
+                    stockValueLineData: {} // ADDED
                 });
             }
 
@@ -85,24 +87,40 @@ module.exports = (pool) => {
             
             // --- 3. Stale Inventory (90d) ---
             const recentMovement = new Set();
+
+            // --- 4. NEW: Most Active Users (30d) ---
+            const mostActiveUsersMap = new Map();
             
-            // --- 4. NEW: Data for Line Charts ---
-            const txMixLineData = {
+            // --- 5. NEW: Data for Line Charts ---
+            const txMixLineData = { // By Quantity
                 'CREATE_ITEM': Array(7).fill(0),
                 'STOCK_IN': Array(7).fill(0),
                 'STOCK_OUT': Array(7).fill(0),
                 'MOVE': Array(7).fill(0)
             };
-            const locationActivityData = {};
+            const locationActivityData = {}; // By Count
             activeLocations.forEach(loc => {
                 locationActivityData[loc] = Array(7).fill(0);
             });
+            const stockValueLineData = { // By Value
+                'STOCK_IN': Array(7).fill(0),
+                'STOCK_OUT': Array(7).fill(0)
+            };
+            const priceHistoryMap = new Map(); // To track prices for value chart
             // --- END NEW ---
             
             currentChain.forEach(block => {
                 if (block.index === 0) return;
                 const tx = block.transaction;
                 const blockDate = new Date(block.timestamp);
+
+                // --- NEW: Build Price History Map ---
+                if (tx.txType === 'CREATE_ITEM') {
+                    priceHistoryMap.set(tx.itemSku, tx.price || 0);
+                } else if (tx.txType === 'ADMIN_EDIT_ITEM' && tx.newPrice !== undefined) {
+                    priceHistoryMap.set(tx.itemSku, tx.newPrice);
+                }
+                // --- END NEW ---
 
                 // 2. Top Movers
                 if (tx.txType === 'STOCK_OUT' && blockDate > thirtyDaysAgo) {
@@ -114,18 +132,24 @@ module.exports = (pool) => {
                     recentMovement.add(tx.itemSku);
                 }
 
-                // --- 4. NEW: Populate Line Chart Data ---
+                // 4. Most Active Users
+                if (blockDate > thirtyDaysAgo && tx.adminUserName) {
+                    mostActiveUsersMap.set(tx.adminUserName, (mostActiveUsersMap.get(tx.adminUserName) || 0) + 1);
+                }
+
+                // --- 5. NEW: Populate Line Chart Data ---
                 if (blockDate > sevenDaysAgo) {
                     const dateStr = blockDate.toISOString().split('T')[0];
                     if (dayMap.has(dateStr)) {
                         const dayIndex = dayMap.get(dateStr);
 
-                        // A. Populate Tx Mix Data
+                        // A. Populate Tx Mix Data (By Quantity)
                         if (txMixLineData[tx.txType]) {
-                            txMixLineData[tx.txType][dayIndex]++;
+                            // *** MODIFIED ***
+                            txMixLineData[tx.txType][dayIndex] += (tx.quantity || 0);
                         }
 
-                        // B. Populate Location Activity Data
+                        // B. Populate Location Activity Data (By Count)
                         if (tx.location && locationActivityData[tx.location]) {
                             locationActivityData[tx.location][dayIndex]++;
                         }
@@ -134,6 +158,16 @@ module.exports = (pool) => {
                         }
                         if (tx.fromLocation && locationActivityData[tx.fromLocation]) {
                             locationActivityData[tx.fromLocation][dayIndex]++;
+                        }
+
+                        // C. Populate Stock Value Data
+                        const currentPrice = priceHistoryMap.get(tx.itemSku) || 0;
+                        const txValue = currentPrice * (tx.quantity || 0);
+                        
+                        if (tx.txType === 'CREATE_ITEM' || tx.txType === 'STOCK_IN') {
+                            stockValueLineData['STOCK_IN'][dayIndex] += txValue;
+                        } else if (tx.txType === 'STOCK_OUT') {
+                            stockValueLineData['STOCK_OUT'][dayIndex] += txValue;
                         }
                     }
                 }
@@ -155,7 +189,6 @@ module.exports = (pool) => {
             // 3. Process Stale Inventory
             const staleInventory = [];
             inventory.forEach((product, sku) => {
-                // *** ADDED THIS CHECK ***
                 if (product.is_deleted) return; 
                 
                 if (!recentMovement.has(sku)) {
@@ -171,10 +204,9 @@ module.exports = (pool) => {
                 }
             });
 
-            // --- 4. High-Value Items ---
+            // 4. High-Value Items
             const highValueItems = [];
             inventory.forEach((product, sku) => {
-                // *** ADDED THIS CHECK ***
                 if (product.is_deleted) return; 
 
                 let totalStock = 0;
@@ -193,16 +225,23 @@ module.exports = (pool) => {
                 .sort((a, b) => b.value - a.value) // Sort descending by value
                 .slice(0, 5); // Get top 5
 
+            // 5. Process Most Active Users
+            const mostActiveUsers = Array.from(mostActiveUsersMap.entries())
+                .sort((a, b) => b[1] - a[1]) // Sort descending by count
+                .slice(0, 3) // Get top 3
+                .map(([name, count]) => ({ name, count }));
+
             
             console.log('✅ New KPIs generated.');
             res.status(200).json({
-                // txMix: (REMOVED)
                 topMovers: topMovers,
                 highValueItems: sortedHighValue,
                 staleInventory: staleInventory.slice(0, 5),
-                dateLabels: dateLabels,                 // ADDED
-                txMixLineData: txMixLineData,           // ADDED
-                locationActivityData: locationActivityData // ADDED
+                mostActiveUsers: mostActiveUsers,           // ADDED
+                dateLabels: dateLabels,                 
+                txMixLineData: txMixLineData,           
+                locationActivityData: locationActivityData,
+                stockValueLineData: stockValueLineData     // ADDED
             });
 
         } catch (e) {
@@ -249,13 +288,9 @@ module.exports = (pool) => {
 
             inventory.forEach((product, sku) => {
                 
-                // **********************************
-                // *** THIS IS THE FIX ***
-                // Skip any product that has been marked as deleted
                 if (product.is_deleted) {
                     return; // Go to the next product
                 }
-                // **********************************
                 
                 let totalStock = 0;
                 product.locations.forEach(qty => totalStock += qty);

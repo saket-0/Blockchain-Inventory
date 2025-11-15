@@ -10,9 +10,11 @@ export const renderDashboard = async () => {
 
     let totalUnits = 0;
     let totalValue = 0;
+    let activeSkuCount = 0; // <-- ADDED
     inventory.forEach(product => {
         if (product.is_deleted) return;
         
+        activeSkuCount++; // <-- ADDED
         let totalStock = 0;
         product.locations.forEach(qty => totalStock += qty);
         totalUnits += totalStock;
@@ -21,6 +23,7 @@ export const renderDashboard = async () => {
 
     appContent.querySelector('#kpi-total-value').textContent = `₹${totalValue.toFixed(2)}`;
     appContent.querySelector('#kpi-total-units').textContent = totalUnits;
+    appContent.querySelector('#kpi-total-skus').textContent = activeSkuCount; // <-- ADDED
     appContent.querySelector('#kpi-transactions').textContent = blockchain.length;
     
     // --- Render Recent Activity ---

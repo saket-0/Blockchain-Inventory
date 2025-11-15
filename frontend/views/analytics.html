@@ -16,15 +16,15 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold mb-4 text-slate-800">Transaction Mix (Last 7 Days)</h2>
+            <h2 class="text-2xl font-semibold mb-4 text-slate-800">Transaction Mix by Quantity (Last 7 Days)</h2>
             <canvas id="tx-mix-line-chart"></canvas>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-md">
-             <h2 class="text-2xl font-semibold mb-4 text-slate-800">Location Activity (Last 7 Days)</h2>
-            <canvas id="location-activity-chart"></canvas>
+             <h2 class="text-2xl font-semibold mb-4 text-slate-800">Stock Value Flow (Last 7 Days)</h2>
+            <canvas id="stock-value-chart"></canvas>
         </div>
-    </div>
+        </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
@@ -65,7 +65,13 @@
                         <p class="text-slate-500">Loading...</p>
                     </div>
                 </div>
-            </div>
+                <div class="border-t border-slate-200 pt-4">
+                    <h3 class="font-semibold text-slate-800 mb-2">Most Active Users (30d)</h3>
+                    <div id="analytics-active-users" class="space-y-2 text-sm">
+                        <p class="text-slate-500">Loading...</p>
+                    </div>
+                </div>
+                </div>
         </div>
     </div>
 
