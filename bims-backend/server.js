@@ -12,6 +12,7 @@ const blockchainRoutes = require('./routes/blockchain');
 const analyticsRoutes = require('./routes/analytics');
 const locationRoutes = require('./routes/locations'); 
 const categoryRoutes = require('./routes/categories'); 
+const imageRoutes = require('./routes/image'); // <-- ADDED
 
 const app = express();
 const port = 3000;
@@ -108,7 +109,6 @@ app.use((req, res, next) => {
     console.log('Path:', req.path);
     console.log('Origin:', req.headers.origin);
     console.log('Cookie Header:', req.headers.cookie);
-    console.log('Session ID:', req.sessionID);
     console.log('Session User:', req.session.user ? req.session.user.email : 'NONE');
     next();
 });
@@ -122,6 +122,7 @@ app.use('/api/blockchain', blockchainRoutes(pool, broadcastToClients));
 app.use('/api/analytics', analyticsRoutes(pool));
 app.use('/api/locations', locationRoutes(pool)); 
 app.use('/api/categories', categoryRoutes(pool)); 
+app.use('/api/image', imageRoutes(pool)); // <-- ADDED
 
 // --- ** 8. NEW: Server-Sent Events (SSE) Endpoint ** ---
 const isAuthenticatedSSE = (req, res, next) => {

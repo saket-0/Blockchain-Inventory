@@ -9,7 +9,12 @@ import { renderFullLedger } from './renderers/ledger.js';
 import { toggleProductEditMode, renderProductDetail } from './renderers/product-detail.js';
 
 // vvv IMPORT THE NEW SERVICE vvv
-import { openImageCropper, handleCropConfirm, handleCropCancel } from '../services/image-uploader.js';
+import { 
+    openImageCropper, 
+    openCropperFromUrl, // <-- NEW
+    handleCropConfirm, 
+    handleCropCancel 
+} from '../services/image-uploader.js';
 // ^^^ IMPORT THE NEW SERVICE ^^^
 
 // --- Import all handler functions ---
@@ -43,6 +48,37 @@ import {
     handleUpdateProfile,
     handleChangePassword
 } from '../handlers/profile.js';
+
+
+// --- *** NEW HELPER FUNCTION *** ---
+/**
+ * Handles loading an image from a URL input, opening the cropper,
+ * and setting the input's value to the cropped result.
+ * @param {HTMLInputElement} targetUrlInput - The URL input field.
+ * @param {function} showSuccess - Success notification function.
+ * @param {function} showError - Error notification function.
+ */
+const handleImageURLLoad = async (targetUrlInput, showSuccess, showError) => {
+    if (!targetUrlInput) return;
+    
+    const url = targetUrlInput.value;
+    if (!url) {
+        showError("Please paste or type a URL first.");
+        return;
+    }
+
+    try {
+        // This function now opens the cropper and resolves with the cropped Base64
+        const croppedBase64 = await openCropperFromUrl(url, showSuccess, showError);
+        // On success, set the input value to the new cropped data
+        targetUrlInput.value = croppedBase64;
+    } catch (error) {
+        // If the user cancels or the URL is bad, this catch block runs.
+        // We *do not* clear the input, per the requirement.
+        console.warn('URL image load failed or was cancelled:', error.message);
+    }
+};
+// --- *** END HELPER FUNCTION *** ---
 
 
 export function initAppListeners() {
@@ -249,13 +285,28 @@ export function initAppListeners() {
         }
 
         // vvv MODIFIED CLICK LISTENERS vvv
+        // --- Add Product Page ---
         if (e.target.closest('#add-image-upload-button')) {
             e.preventDefault();
             appContent.querySelector('#add-image-file-input')?.click();
         }
+        if (e.target.closest('#add-image-load-url-button')) {
+            e.preventDefault();
+            // Call the new helper function
+            const targetInput = appContent.querySelector('#add-image-url');
+            handleImageURLLoad(targetInput, showSuccess, showError);
+        }
+        
+        // --- Edit Product Page ---
         if (e.target.closest('#edit-image-upload-button')) {
             e.preventDefault();
             appContent.querySelector('#edit-image-file-input')?.click();
+        }
+        if (e.target.closest('#edit-image-load-url-button')) {
+            e.preventDefault();
+            // Call the new helper function
+            const targetInput = appContent.querySelector('#edit-product-image-url');
+            handleImageURLLoad(targetInput, showSuccess, showError);
         }
         // ^^^ END OF MODIFIED CLICK LISTENERS ^^^
     });
@@ -326,6 +377,22 @@ export function initAppListeners() {
             renderFullLedger();
         }
     });
+    
+    // --- *** NEW PASTE LISTENER *** ---
+    appContent.addEventListener('paste', (e) => {
+        // We only care about pasting into the two URL fields
+        if (e.target.id !== 'add-image-url' && e.target.id !== 'edit-product-image-url') {
+            return;
+        }
+
+        // We use a setTimeout to allow the browser to paste the text into the
+        // input field *first*. Only after that can we read the value.
+        setTimeout(() => {
+            const targetInput = e.target;
+            handleImageURLLoad(targetInput, showSuccess, showError);
+        }, 0);
+    });
+    // --- *** END PASTE LISTENER *** ---
 
     // --- FOCUS (for select-all-on-focus) ---
     appContent.addEventListener('focus', (e) => {
@@ -333,7 +400,8 @@ export function initAppListeners() {
             e.target.type === 'text' || 
             e.target.type === 'number' || 
             e.target.type === 'email' || 
-            e.target.type === 'password'
+            e.target.type === 'password' ||
+            e.target.type === 'url' // <-- ADDED
         )) {
             // Exclude search and date inputs
             if (e.target.id !== 'product-search-input' && 

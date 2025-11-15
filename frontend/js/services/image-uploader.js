@@ -15,7 +15,37 @@ const confirmButton = document.getElementById('cropper-confirm-button');
 const cancelButton = document.getElementById('cropper-cancel-button');
 
 /**
- * Opens the cropper modal with the selected image.
+ * Public function: Opens the modal with image data.
+ * This can be a Base64 string from a file or from the URL proxy.
+ * @param {string} imageDataUrl The Base64 Data URL (e.g., "data:image/png;base64,...")
+ * @returns {Promise<string>} A promise that resolves with the cropped Base64 string.
+ */
+const openCropperWithData = (imageDataUrl) => {
+    return new Promise((resolve, reject) => {
+        // Store the callbacks to be used by the button handlers
+        currentResolveCallback = resolve;
+        currentRejectCallback = reject;
+
+        image.src = imageDataUrl;
+        modal.classList.remove('hidden');
+
+        // Destroy old instance if it exists
+        if (cropperInstance) {
+            cropperInstance.destroy();
+        }
+
+        // --- Initialize Cropper.js ---
+        cropperInstance = new Cropper(image, {
+            aspectRatio: 1 / 1, // Enforce 1:1 square
+            viewMode: 1,        // Restrict crop box to canvas
+            background: false,  // Hide grid background
+            autoCropArea: 0.9,  // Start with 90% of the image selected
+        });
+    });
+};
+
+/**
+ * Public function: Processes a local file upload.
  * @param {File} file The file from the input.
  * @param {function} showSuccess Callback for success messages.
  * @param {function} showError Callback for error messages.
@@ -37,30 +67,14 @@ export const openImageCropper = (file, showSuccess, showError) => {
             return reject(new Error('File is too large.'));
         }
 
-        // Store the callbacks to be used by the button handlers
-        currentResolveCallback = resolve;
-        currentRejectCallback = reject;
-
         // --- 2. File Reading ---
         const reader = new FileReader();
 
         reader.onload = (e) => {
-            image.src = e.target.result;
-            modal.classList.remove('hidden');
-
-            // Destroy old instance if it exists
-            if (cropperInstance) {
-                cropperInstance.destroy();
-            }
-
-            // --- 3. Initialize Cropper.js ---
-            cropperInstance = new Cropper(image, {
-                aspectRatio: 1 / 1, // Enforce 1:1 square
-                viewMode: 1,        // Restrict crop box to canvas
-                background: false,  // Hide grid background
-                autoCropArea: 0.9,  // Start with 90% of the image selected
-            });
             showSuccess(`Image "${file.name}" loaded. Please crop.`);
+            // Pass the Base64 data to the main modal function
+            // and chain its promise back to the original caller.
+            openCropperWithData(e.target.result).then(resolve).catch(reject);
         };
 
         reader.onerror = () => {
@@ -72,6 +86,45 @@ export const openImageCropper = (file, showSuccess, showError) => {
         reader.readAsDataURL(file);
     });
 };
+
+/**
+ * Public function: Fetches a remote URL via the proxy and opens the cropper.
+ * @param {string} url The remote image URL.
+ * @param {function} showSuccess Callback for success messages.
+ * @param {function} showError Callback for error messages.
+ * @returns {Promise<string>} A promise that resolves with the cropped Base64 string.
+ */
+export const openCropperFromUrl = async (url, showSuccess, showError) => {
+    if (!url) {
+        showError('Please paste an image URL first.');
+        throw new Error('Image URL is required.');
+    }
+    
+    showSuccess('Loading image from URL...');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/image/proxy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ url })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to fetch image from URL');
+        }
+
+        // Now, open the cropper with the Base64 data from the proxy
+        return await openCropperWithData(data.base64);
+
+    } catch (error) {
+        console.error('Proxy fetch error:', error);
+        showError(error.message);
+        throw error; // Re-throw to be caught by the listener
+    }
+};
+
 
 /**
  * Hides the modal and cleans up the cropper instance.
