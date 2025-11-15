@@ -1,5 +1,5 @@
 // frontend/js/ui/renderers/product-detail.js
-import { inventory, blockchain, globalLocations } from '../../app-state.js';
+import { inventory, blockchain, globalLocations } from '../../app-state.js'; // <-- No change needed here
 import { permissionService } from '../../services/permissions.js';
 import { showError } from '../components/notifications.js';
 import { populateLocationDropdown, populateCategoryDropdown } from '../components/dropdowns.js';
@@ -70,13 +70,30 @@ export const renderProductDetail = (productId, navigateTo) => { // Accept naviga
     const editNameInput = appContent.querySelector('#edit-product-name');
     const editPriceInput = appContent.querySelector('#edit-product-price');
     const editCategorySelect = appContent.querySelector('#edit-product-category');
+    const editImageUrlInput = appContent.querySelector('#edit-product-image-url'); // <-- ADDED
     
     const displayName = appContent.querySelector('#detail-product-name');
     const displayId = appContent.querySelector('#detail-product-id');
     const displayCategory = appContent.querySelector('#detail-product-category');
     const displayPrice = appContent.querySelector('#detail-product-price');
+    const displayImage = appContent.querySelector('#product-detail-image'); // <-- ADDED
     
     const sharedIdInput = appContent.querySelector('#update-product-id');
+
+    // vvv ADDED THIS BLOCK vvv
+    const imageUrl = product.imageUrl || '';
+    if (displayImage) {
+        if (imageUrl) {
+            displayImage.src = imageUrl;
+            // Clear placeholder styles in case of previous error
+            displayImage.parentElement.classList.remove('flex', 'items-center', 'justify-center');
+            displayImage.outerHTML = displayImage.outerHTML.replace("<i class=\"ph-bold ph-package text-slate-400 text-6xl\"></i>", "");
+        } else {
+            // Trigger the onerror handler to show placeholder
+            displayImage.src = ""; 
+        }
+    }
+    // ^^^ END BLOCK ^^^
 
     // Populate Display View
     displayName.textContent = product.productName;
@@ -123,6 +140,7 @@ export const renderProductDetail = (productId, navigateTo) => { // Accept naviga
         editPriceInput.value = price.toFixed(2);
         populateCategoryDropdown(editCategorySelect);
         editCategorySelect.value = product.category || 'Uncategorized';
+        editImageUrlInput.value = imageUrl; // <-- ADDED
         toggleProductEditMode(false); // Ensure edit form is hidden
     }
 

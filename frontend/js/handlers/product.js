@@ -15,6 +15,7 @@ export const handleAddItem = async (form) => {
     const toLocation = form.querySelector('#add-to').value;
     const price = parseFloat(form.querySelector('#add-price').value);
     const category = form.querySelector('#add-product-category').value;
+    const imageUrl = form.querySelector('#add-image-url').value; // <-- ADDED
 
     if (!itemSku || !itemName || !category || !quantity || quantity <= 0 || !price || price < 0) {
         return showError("Please fill out all fields with valid data (Price/Qty > 0).");
@@ -25,7 +26,7 @@ export const handleAddItem = async (form) => {
     
     const transaction = {
         txType: "CREATE_ITEM", itemSku, itemName, quantity,
-        price, category,
+        price, category, imageUrl, // <-- ADDED imageUrl
         beforeQuantity: 0, 
         afterQuantity: quantity, 
         toLocation
@@ -42,6 +43,7 @@ export const handleAddItem = async (form) => {
             form.querySelector('#add-product-id').value = generateUniqueSku();
             form.querySelector('#add-product-category').value = stickyCategory;
             form.querySelector('#add-to').value = stickyLocation;
+            // No need to reset imageUrl, form.reset() handles it
 
         } catch (error) {
             showError(`Server error: ${error.message}`);
@@ -147,10 +149,12 @@ export const handleEditProduct = async (form) => {
     const newName = form.querySelector('#edit-product-name').value;
     const newPrice = parseFloat(form.querySelector('#edit-product-price').value);
     const newCategory = form.querySelector('#edit-product-category').value;
+    const newImageUrl = form.querySelector('#edit-product-image-url').value; // <-- ADDED
 
     const product = inventory.get(itemSku);
+    const oldImageUrl = product.imageUrl || ''; // <-- ADDED
     
-    if (product.productName === newName && product.price === newPrice && product.category === newCategory) {
+    if (product.productName === newName && product.price === newPrice && product.category === newCategory && oldImageUrl === newImageUrl) { // <-- MODIFIED
         return showSuccess("No changes to save.");
     }
 
@@ -160,9 +164,11 @@ export const handleEditProduct = async (form) => {
         oldName: product.productName,
         oldPrice: product.price,
         oldCategory: product.category,
+        oldImageUrl: oldImageUrl, // <-- ADDED
         newName: newName,
         newPrice: newPrice,
-        newCategory: newCategory
+        newCategory: newCategory,
+        newImageUrl: newImageUrl // <-- ADDED
     };
 
     if (processTransaction(transaction, false, showError)) {

@@ -1,5 +1,5 @@
 // frontend/js/ui/renderers/product-list.js
-import { inventory, newProductCounter } from '../../app-state.js';
+import { inventory, newProductCounter } from '../../app-state.js'; // <-- No change needed here, product.imageUrl is part of inventory
 import { permissionService } from '../../services/permissions.js';
 import { populateLocationDropdown, populateCategoryDropdown } from '../components/dropdowns.js';
 import { generateUniqueSku } from '../../utils/product.js';
@@ -80,8 +80,14 @@ export const renderProductList = () => {
         let totalStock = 0;
         product.locations.forEach(qty => totalStock += qty);
 
+        // vvv MODIFIED to include image vvv
+        const imageUrl = product.imageUrl || '';
+
         productCard.innerHTML = `
-            <div class="product-card-placeholder"><i class="ph-bold ph-package"></i></div>
+            ${imageUrl ? 
+                `<img src="${imageUrl}" alt="${product.productName}" class="product-card-image" onerror="this.remove();">` : 
+                `<div class="product-card-placeholder"><i class="ph-bold ph-package"></i></div>`
+            }
             <div class="product-card-content">
                 <h3 class="font-semibold text-lg text-indigo-700 truncate">${product.productName}</h3>
                 <p class="text-xs text-slate-500 mb-1">${productId}</p>
@@ -93,6 +99,7 @@ export const renderProductList = () => {
                 </div>
             </div>
         `;
+        // ^^^ END MODIFICATION ^^^
         productGrid.appendChild(productCard);
     });
 

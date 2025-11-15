@@ -198,7 +198,8 @@ const processTransaction = (transaction, inventory, suppressErrors = false, show
     const { 
         txType, itemSku, itemName, quantity, 
         fromLocation, toLocation, location, price, category,
-        newName, newPrice, newCategory
+        newName, newPrice, newCategory,
+        imageUrl, newImageUrl // <-- ADDED
     } = transaction;
 
     let product;
@@ -222,6 +223,7 @@ const processTransaction = (transaction, inventory, suppressErrors = false, show
                     productName: itemName,
                     price: price || 0,
                     category: category || 'Uncategorized',
+                    imageUrl: imageUrl || '', // <-- ADDED
                     locations: new Map()
                 });
             }
@@ -266,6 +268,7 @@ const processTransaction = (transaction, inventory, suppressErrors = false, show
                 // Use !== undefined to allow setting price to 0
                 product.price = newPrice !== undefined ? newPrice : product.price;
                 product.category = newCategory || product.category;
+                product.imageUrl = newImageUrl !== undefined ? newImageUrl : product.imageUrl; // <-- ADDED
             }
             return true;
 

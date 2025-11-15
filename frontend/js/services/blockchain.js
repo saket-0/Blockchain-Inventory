@@ -38,7 +38,8 @@ export const processTransaction = (transaction, suppressErrors = false, showErro
     const { 
         txType, itemSku, itemName, quantity, 
         fromLocation, toLocation, location, price, category,
-        newName, newPrice, newCategory
+        newName, newPrice, newCategory,
+        imageUrl, newImageUrl // <-- ADDED
     } = transaction;
 
     let product;
@@ -62,6 +63,7 @@ export const processTransaction = (transaction, suppressErrors = false, showErro
                     productName: itemName,
                     price: price || 0,
                     category: category || 'Uncategorized',
+                    imageUrl: imageUrl || '', // <-- ADDED
                     locations: new Map()
                 });
             }
@@ -104,6 +106,7 @@ export const processTransaction = (transaction, suppressErrors = false, showErro
                 product.productName = newName || product.productName;
                 product.price = newPrice !== undefined ? newPrice : product.price;
                 product.category = newCategory || product.category;
+                product.imageUrl = newImageUrl !== undefined ? newImageUrl : product.imageUrl; // <-- ADDED
             }
             return true;
 

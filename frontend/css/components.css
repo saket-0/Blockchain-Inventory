@@ -46,6 +46,16 @@
     padding: 1rem; /* 16px */
 }
 
+/* vvv ADDED THIS RULE vvv */
+.product-card-image {
+    height: 10rem; /* 160px */
+    width: 100%;
+    object-fit: cover;
+    display: block;
+}
+/* ^^^ END ^^^ */
+
+
 /* Sidebar Navigation Link Styles */
 .nav-link {
     display: flex;

@@ -13,7 +13,8 @@ export const createLedgerBlockElement = (block) => {
         targetUser, targetEmail, targetRole, oldEmail,
         oldName,
         targetId, targetName, newName,
-        oldPrice, oldCategory, newPrice, newCategory
+        oldPrice, oldCategory, newPrice, newCategory,
+        imageUrl, oldImageUrl, newImageUrl // <-- ADDED
     } = block.transaction;
     
     let transactionHtml = '';
@@ -26,7 +27,8 @@ export const createLedgerBlockElement = (block) => {
             transactionHtml = `<span class="font-semibold text-green-700">CREATE</span> <strong>${quantity}</strong> of <strong>${itemName}</strong> (${itemSku}) to <strong>${toLocation}</strong>`;
             detailsHtml = `${actorHtml}
                            <li>Price: <strong>₹${(price || 0).toFixed(2)}</strong></li>
-                           <li>Category: <strong>${category || 'N/A'}</strong></li>`;
+                           <li>Category: <strong>${category || 'N/A'}</strong></li>
+                           <li>Image: <strong>${imageUrl ? 'Provided' : 'None'}</strong></li>`; // <-- ADDED
             break;
         case 'MOVE':
             transactionHtml = `<span class="font-semibold text-blue-600">MOVE</span> <strong>${quantity}</strong> of <strong>${itemSku}</strong>`;
@@ -56,6 +58,11 @@ export const createLedgerBlockElement = (block) => {
             if (newCategory !== oldCategory) {
                 detailsHtml += `<li>Category: ${oldCategory} → <strong>${newCategory}</strong></li>`;
             }
+            // vvv ADDED THIS BLOCK vvv
+            if (newImageUrl !== oldImageUrl) {
+                detailsHtml += `<li>Image URL: ${oldImageUrl ? 'Set' : 'None'} → <strong>${newImageUrl ? 'Set' : 'None'}</strong></li>`;
+            }
+            // ^^^ END BLOCK ^^^
             detailsHtml += actorHtml;
             break;
         
