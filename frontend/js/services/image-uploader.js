@@ -20,7 +20,8 @@ const cancelButton = document.getElementById('cropper-cancel-button');
  * @param {string} imageDataUrl The Base64 Data URL (e.g., "data:image/png;base64,...")
  * @returns {Promise<string>} A promise that resolves with the cropped Base64 string.
  */
-const openCropperWithData = (imageDataUrl) => {
+// --- *** THIS FUNCTION IS NOW EXPORTED *** ---
+export const openCropperWithData = (imageDataUrl) => {
     return new Promise((resolve, reject) => {
         // Store the callbacks to be used by the button handlers
         currentResolveCallback = resolve;
@@ -92,7 +93,7 @@ export const openImageCropper = (file, showSuccess, showError) => {
  * @param {string} url The remote image URL.
  * @param {function} showSuccess Callback for success messages.
  * @param {function} showError Callback for error messages.
- * @returns {Promise<string>} A promise that resolves with the cropped Base64 string.
+ *As {Promise<string>} A promise that resolves with the cropped Base64 string.
  */
 export const openCropperFromUrl = async (url, showSuccess, showError) => {
     if (!url) {

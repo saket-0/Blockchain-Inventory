@@ -11,7 +11,8 @@ import { toggleProductEditMode, renderProductDetail } from './renderers/product-
 // vvv IMPORT THE NEW SERVICE vvv
 import { 
     openImageCropper, 
-    openCropperFromUrl, // <-- NEW
+    openCropperFromUrl,
+    openCropperWithData, // <-- *** IMPORTED ***
     handleCropConfirm, 
     handleCropCancel 
 } from '../services/image-uploader.js';
@@ -308,6 +309,39 @@ export function initAppListeners() {
             const targetInput = appContent.querySelector('#edit-product-image-url');
             handleImageURLLoad(targetInput, showSuccess, showError);
         }
+        
+        // --- *** NEW CLICK LISTENER FOR RECROP *** ---
+        if (e.target.closest('#edit-image-recrop-button')) {
+            e.preventDefault();
+            const targetInput = appContent.querySelector('#edit-product-image-url');
+            
+            if (targetInput && targetInput.value) {
+                const imageUrl = targetInput.value;
+                try {
+                    let croppedBase64;
+                    if (imageUrl.startsWith('http')) {
+                        // It's a remote URL, use the proxy
+                        croppedBase64 = await openCropperFromUrl(imageUrl, showSuccess, showError);
+                    } else if (imageUrl.startsWith('data:')) {
+                        // It's Base64 data, use the cropper directly
+                        croppedBase64 = await openCropperWithData(imageUrl);
+                    } else {
+                        showError("Current value is not a valid image URL or data.");
+                        return;
+                    }
+                    targetInput.value = croppedBase64; // Set input to the new cropped value
+                } catch (error) {
+                    if (error.message !== 'User cancelled cropping.') {
+                        showError(error.message);
+                    }
+                    console.warn('Recrop failed or was cancelled:', error.message);
+                }
+            } else {
+                showError("No image to recrop. Load a URL or upload one first.");
+            }
+        }
+        // --- *** END NEW CLICK LISTENER *** ---
+
         // ^^^ END OF MODIFIED CLICK LISTENERS ^^^
     });
 
