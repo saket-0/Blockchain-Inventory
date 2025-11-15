@@ -220,15 +220,18 @@ module.exports = (pool, broadcastToClients) => {
                 totalUnits += totalStock;
                 totalValue += (product.price || 0) * totalStock;
 
+                // vvv MODIFIED THIS OBJECT vvv
                 serializableInventory.push([
                     sku,
                     {
                         productName: product.productName,
                         price: product.price,
                         category: product.category,
+                        imageUrl: product.imageUrl || '', // <-- ADDED
                         locations: Array.from(product.locations.entries())
                     }
                 ]);
+                // ^^^ END MODIFICATION ^^^
             });
 
             console.log(`✅ Snapshot generated for ${timestamp}.`);
