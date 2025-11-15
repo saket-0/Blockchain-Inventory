@@ -104,26 +104,23 @@ module.exports = (pool) => {
             const { name } = catResult.rows[0];
 
             // 2. Check if this category has ANY transaction history
-            // *** THIS IS THE FIX: Changed query to never find history ***
-            // A category's only "history" is CREATE_ITEM. If the user
-            // wants to delete a category, it's because no items
-            // *currently* use it. The archive-on-history-check
-            // was preventing this. This new query will *always*
-            // result in a hard-delete, which is the desired behavior.
+            // *** THIS IS THE FIX: This query now correctly checks for history ***
             const historyCheck = await client.query(
                 `SELECT 1 FROM blockchain 
-                 WHERE transaction->>'txType' = 'THIS_WILL_NEVER_MATCH'
-                 AND transaction->>'category' = $1
-                 LIMIT 1`,
+                 WHERE transaction->>'txType' IN ('CREATE_ITEM', 'ADMIN_EDIT_ITEM') 
+                 AND (
+                    transaction->>'category' = $1 OR
+                    transaction->>'newCategory' = $1
+                 ) LIMIT 1`,
                 [name]
             );
+            // *** END OF FIX ***
 
             let message;
             if (historyCheck.rows.length > 0) {
-                // (This block will now never be reached)
                 // 3a. It has history. Soft-delete (Archive) it.
                 await client.query('UPDATE categories SET is_archived = true WHERE id = $1', [id]);
-                message = `Category "${name}" archived (it is linked to products).`;
+                message = `Category "${name}" archived (it has transaction history).`;
             } else {
                 // 3b. No history. It's safe to permanently delete.
                 await client.query('DELETE FROM categories WHERE id = $1', [id]);
