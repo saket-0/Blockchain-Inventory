@@ -4,6 +4,23 @@ import { permissionService } from '../../services/permissions.js';
 import { populateLocationDropdown, populateCategoryDropdown } from '../components/dropdowns.js';
 import { generateUniqueSku } from '../../utils/product.js';
 
+/**
+ * Helper to set the content of the preview button in the Add Product form.
+ */
+const setAddFormPreviewButton = (imageUrl) => {
+    const previewButton = document.getElementById('add-image-preview-button');
+    if (!previewButton) return;
+
+    if (imageUrl) {
+        previewButton.innerHTML = `<img src="${imageUrl}" alt="Product Image Preview">`;
+    } else {
+        previewButton.innerHTML = `
+            <i class="ph-bold ph-upload-simple"></i>
+            <span>Upload an Image</span>
+        `;
+    }
+};
+
 export const renderProductList = () => {
     const appContent = document.getElementById('app-content');
     if (!appContent) return;
@@ -30,6 +47,11 @@ export const renderProductList = () => {
         if (!addForm.querySelector('#add-product-name').value) {
             addForm.querySelector('#add-product-name').value = `New Product ${newProductCounter}`;
         }
+
+        // vvv SET THE PREVIEW BUTTON CONTENT vvv
+        const imageUrlInput = addForm.querySelector('#add-image-url');
+        setAddFormPreviewButton(imageUrlInput.value); // Set initial state
+        // ^^^ END OF CHANGE ^^^
     }
     
     // Populate the FILTER dropdowns
@@ -80,16 +102,16 @@ export const renderProductList = () => {
         let totalStock = 0;
         product.locations.forEach(qty => totalStock += qty);
 
-        // vvv MODIFIED to include image vvv
         const imageUrl = product.imageUrl || '';
 
+        // vvv MODIFIED to fix object-fit artifacts vvv
         productCard.innerHTML = `
             ${imageUrl ? 
-                `<img src="${imageUrl}" alt="${product.productName}" class="product-card-image" onerror="this.remove();">` : 
+                `<div class="product-card-placeholder"><img src="${imageUrl}" alt="${product.productName}" class="product-card-image" onerror="this.remove();"></div>` : 
                 `<div class="product-card-placeholder"><i class="ph-bold ph-package"></i></div>`
             }
             <div class="product-card-content">
-                <h3 class="font-semibold text-lg text-indigo-700 truncate">${product.productName}</h3>
+        <h3 class="font-semibold text-lg text-indigo-700 truncate">${product.productName}</h3>
                 <p class="text-xs text-slate-500 mb-1">${productId}</p>
                 <p class="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full inline-block mb-2">${product.category || 'Uncategorized'}</p>
                 <hr class="my-2">
@@ -99,7 +121,6 @@ export const renderProductList = () => {
                 </div>
             </div>
         `;
-        // ^^^ END MODIFICATION ^^^
         productGrid.appendChild(productCard);
     });
 

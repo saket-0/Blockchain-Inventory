@@ -8,9 +8,9 @@ import { renderProductList } from './renderers/product-list.js';
 import { renderFullLedger } from './renderers/ledger.js';
 import { toggleProductEditMode, renderProductDetail } from './renderers/product-detail.js';
 
-// vvv IMPORT THE NEW SERVICE vvv
-import { processImageUpload } from '../services/image-uploader.js';
-// ^^^ IMPORT THE NEW SERVICE ^^^
+// vvv IMPORT THE NEW MODAL vvv
+import { openImageModal } from './components/image-modal.js';
+// ^^^ IMPORT THE NEW MODAL ^^^
 
 // --- Import all handler functions ---
 import {
@@ -238,16 +238,20 @@ export function initAppListeners() {
             }
         }
 
-        // vvv ADD THESE NEW CLICK LISTENERS vvv
-        if (e.target.closest('#add-image-upload-button')) {
+        // vvv REPLACED OLD LISTENERS WITH THESE NEW ONES vvv
+        if (e.target.closest('#add-image-preview-button')) {
             e.preventDefault();
-            appContent.querySelector('#add-image-file-input')?.click();
+            const targetInput = appContent.querySelector('#add-image-url');
+            const previewButton = appContent.querySelector('#add-image-preview-button');
+            openImageModal(targetInput, previewButton, targetInput.value);
         }
-        if (e.target.closest('#edit-image-upload-button')) {
+        if (e.target.closest('#edit-image-preview-button')) {
             e.preventDefault();
-            appContent.querySelector('#edit-image-file-input')?.click();
+            const targetInput = appContent.querySelector('#edit-product-image-url');
+            const previewButton = appContent.querySelector('#edit-image-preview-button');
+            openImageModal(targetInput, previewButton, targetInput.value);
         }
-        // ^^^ END OF NEW CLICK LISTENERS ^^^
+        // ^^^ END OF REPLACEMENT ^^^
     });
 
     // --- CHANGES & INPUTS ---
@@ -270,26 +274,9 @@ export function initAppListeners() {
             renderFullLedger();
         }
 
-        // vvv ADD THESE NEW CHANGE LISTENERS vvv
-        if (e.target.id === 'add-image-file-input') {
-            const file = e.target.files[0];
-            const targetUrlInput = appContent.querySelector('#add-image-url');
-            if (file && targetUrlInput) {
-                // Pass our notification functions to the service
-                processImageUpload(file, targetUrlInput, showSuccess, showError);
-                e.target.value = null; // Clear file input so user can select same file again
-            }
-        }
-        if (e.target.id === 'edit-image-file-input') {
-            const file = e.target.files[0];
-            const targetUrlInput = appContent.querySelector('#edit-product-image-url');
-            if (file && targetUrlInput) {
-                // Pass our notification functions to the service
-                processImageUpload(file, targetUrlInput, showSuccess, showError);
-                e.target.value = null; // Clear file input
-            }
-        }
-        // ^^^ END OF NEW CHANGE LISTENERS ^^^
+        // vvv REMOVED THE OLD 'add-image-file-input' LISTENERS vvv
+        // ... (Old file input listeners are gone) ...
+        // ^^^ END OF REMOVAL ^^^
     });
 
     appContent.addEventListener('input', (e) => {
