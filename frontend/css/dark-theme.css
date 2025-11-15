@@ -305,3 +305,11 @@
     color: #e2e8f0; /* slate-200 */
 }
 /* --- END: Dark Mode for HTML Legend --- */
+
+.dark #product-edit-toggle-button {
+    color: #94a3b8; /* slate-400 */
+}
+.dark #product-edit-toggle-button:hover {
+    background-color: #1e293b; /* slate-800 */
+    color: #a5b4fc; /* indigo-300 */
+}
