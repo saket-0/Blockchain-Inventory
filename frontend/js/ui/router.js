@@ -1,6 +1,6 @@
 // frontend/js/ui/router.js
 import { AppState, currentUser, blockchain } from '../app-state.js';
-import { authService } from '../services/auth.js';
+// import { authService } from '../services/auth.js';
 import { permissionService } from '../services/permissions.js';
 import { loadBlockchain, rebuildInventoryState } from '../services/blockchain.js';
 import { startSSEConnection } from '../services/sse.js';
@@ -14,7 +14,8 @@ import { renderProductDetail } from './renderers/product-detail.js';
 import { renderAdminPanel } from './renderers/admin.js';
 import { renderFullLedger } from './renderers/ledger.js';
 import { renderAnalyticsPage } from '../lib/charts/analytics.js';
-import { renderAnomalyPage } from './renderers/anomaly.js';
+// import { renderAnomalyPage } from './renderers/anomaly.js';
+import { renderAnomalyPage } from './anomaly-renderer.js';
 import { renderProfilePage } from './renderers/profile.js';
 import { renderSnapshotView } from './renderers/snapshot.js';
 

@@ -1,5 +1,5 @@
 // frontend/js/handlers/ledger.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js';
 import { permissionService } from '../services/permissions.js';
 import { setBlockchain, inventory } from '../app-state.js';
 import { rebuildInventoryState } from '../services/blockchain.js';

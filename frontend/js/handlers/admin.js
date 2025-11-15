@@ -1,9 +1,9 @@
 // frontend/js/handlers/admin.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js'; // <-- REMOVED THIS LINE
 import { permissionService } from '../services/permissions.js';
 import { showError, showSuccess } from '../ui/components/notifications.js';
 import { populateLoginDropdown } from '../ui/components/dropdowns.js';
-import { renderAdminPanel } from '../ui/renderers/admin.js'; // We will create this
+import { renderAdminPanel } from '../ui/renderers/admin.js';
 
 /**
  * Helper function to log admin-only (non-inventory) actions to the blockchain.

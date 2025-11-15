@@ -1,13 +1,10 @@
 // frontend/js/services/blockchain.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js'; // <-- This line should already be removed
 import { 
-    blockchain, inventory, setBlockchain, 
-    setCurrentUser, clearStateOnLogout 
+    blockchain, inventory, setBlockchain 
 } from '../app-state.js';
 import { authService } from './auth.js';
-// We will create this file soon. For now, we stub the import.
-// import { showError } from '../ui/components/notifications.js';
-const showError = (msg) => console.error(msg); // Placeholder
+import { showError } from '../ui/components/notifications.js'; // <-- This line is now correct
 
 /**
  * Sends the transaction to the server, which creates the block.

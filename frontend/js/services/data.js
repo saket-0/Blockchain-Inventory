@@ -1,7 +1,7 @@
 // frontend/js/services/data.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js'; // <-- REMOVED THIS LINE
 import { setGlobalLocations, setGlobalCategories, setGlobalUsers } from '../app-state.js';
-import { showError } from '../ui/components/notifications.js'; // We will create this file soon
+import { showError } from '../ui/components/notifications.js';
 
 /**
  * Fetches all active locations from the server.

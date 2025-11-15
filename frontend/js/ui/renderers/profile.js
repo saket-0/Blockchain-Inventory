@@ -1,5 +1,5 @@
 // frontend/js/ui/renderers/profile.js
-import { API_BASE_URL } from '../../../config.js';
+// import { API_BASE_URL } from '../../../config.js';
 import { showError } from '../components/notifications.js';
 import { createLedgerBlockElement } from '../components/ledger-block.js';
 

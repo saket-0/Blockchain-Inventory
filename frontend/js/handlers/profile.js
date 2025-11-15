@@ -1,5 +1,5 @@
 // frontend/js/handlers/profile.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js';
 import { currentUser, setCurrentUser } from '../app-state.js';
 import { addTransactionToChain } from '../services/blockchain.js';
 import { showError, showSuccess } from '../ui/components/notifications.js';

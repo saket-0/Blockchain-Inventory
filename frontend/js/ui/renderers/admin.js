@@ -1,5 +1,5 @@
 // frontend/js/ui/renderers/admin.js
-import { API_BASE_URL } from '../../../config.js';
+// import { API_BASE_URL } from '../../../config.js';
 import { currentUser, globalLocations, globalCategories } from '../../app-state.js';
 import { showError } from '../components/notifications.js';
 import { fetchLocations, fetchCategories } from '../../services/data.js';

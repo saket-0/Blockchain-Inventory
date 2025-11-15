@@ -1,5 +1,5 @@
 // frontend/js/ui/components/dropdowns.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js'; // <-- REMOVED THIS LINE
 import { globalLocations, globalCategories, globalUsers } from '../../app-state.js';
 import { showError } from './notifications.js';
 

@@ -1,5 +1,5 @@
 // frontend/js/ui/renderers/dashboard.js
-import { API_BASE_URL } from '../../../config.js';
+// import { API_BASE_URL } from '../../../config.js';
 import { inventory, blockchain } from '../../app-state.js';
 import { permissionService } from '../../services/permissions.js';
 import { createLedgerBlockElement } from '../components/ledger-block.js';

@@ -1,5 +1,5 @@
 // frontend/js/services/auth.js
-import { API_BASE_URL } from '../../config.js';
+// import { API_BASE_URL } from '../../config.js'; // <-- REMOVED THIS LINE
 import { setCurrentUser, clearStateOnLogout } from '../app-state.js';
 import { fetchLocations, fetchCategories, fetchUsers } from './data.js';
 

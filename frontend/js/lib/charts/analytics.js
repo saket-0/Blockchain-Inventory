@@ -1,5 +1,5 @@
 // frontend/js/lib/charts/analytics.js
-import { API_BASE_URL } from '../../../config.js';
+// import { API_BASE_URL } from '../../../config.js';
 import { blockchain, globalLocations, globalCategories, inventory } from '../../app-state.js';
 import { addChart } from './helpers.js';
 import { showError } from '../../ui/components/notifications.js';
