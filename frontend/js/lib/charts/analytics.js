@@ -5,7 +5,6 @@ import { addChart } from './helpers.js';
 import { showError } from '../../ui/components/notifications.js';
 import { getChartColors, SEMANTIC_PALETTE, CATEGORICAL_PALETTE } from './colors.js';
 
-// vvv MODIFIED HELPER FUNCTION vvv
 /**
  * Generates a custom HTML legend for a chart.
  * @param {Chart} chart - The Chart.js instance.
@@ -37,7 +36,6 @@ const generateHTMLLegend = (chart, containerId) => {
 
     legendContainer.innerHTML = `<div class="chart-legend">${legendItems.join('')}</div>`;
 };
-// ^^^ END MODIFICATION ^^^
 
 // --- Main Analytics Page Renderer ---
 // ... (This function is unchanged)
@@ -260,9 +258,7 @@ const renderInventoryDistributionChart = () => {
         },
         options: {
             responsive: true,
-            // vvv ADDED vvv
             maintainAspectRatio: false,
-            // ^^^ END ^^^
             plugins: { 
                 legend: { 
                     display: false 
@@ -363,9 +359,7 @@ const renderInventoryCategoryChart = () => {
         },
         options: {
             responsive: true,
-            // vvv ADDED vvv
             maintainAspectRatio: false,
-            // ^^^ END ^^^
             plugins: { 
                 legend: { 
                     display: false 
@@ -393,7 +387,7 @@ const renderInventoryCategoryChart = () => {
 };
 
 // --- Chart Renderers (KPI Data) ---
-// (No changes to the KPI-based chart renderers)
+// (These functions are unchanged)
 const renderTxMixLineChart = (data, labels) => {
     const ctx = document.getElementById('tx-mix-line-chart')?.getContext('2d');
     if (!ctx || !data || !labels) return; 

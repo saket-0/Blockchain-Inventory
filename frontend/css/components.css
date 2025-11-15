@@ -155,17 +155,25 @@
 
 /* --- MODIFIED: HTML Legend Styles --- */
 .chart-pie-container {
-    max-width: 300px; /* Or max-w-xs equivalent */
+    /* vvv MODIFIED vvv */
+    width: 100%; 
+    max-width: 300px; /* Use max-width to control size */
     height: 300px;
-    margin-left: 0;
-    margin-right: auto;
+    margin-left: auto;  /* Center the container */
+    margin-right: auto; /* Center the container */
+    /* ^^^ END MODIFICATION ^^^ */
     position: relative; /* For chart.js responsiveness */
 }
 
+/* vvv REMOVED .chart-legend-wrapper vvv */
+
 .chart-legend {
-    display: flex;
-    flex-direction: column;
+    /* vvv MODIFIED vvv */
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Revert to 2-col grid */
     gap: 0.5rem; /* 8px */
+    margin-top: 1rem;
+    /* ^^^ END MODIFICATION ^^^ */
 }
 .legend-item {
     display: flex;

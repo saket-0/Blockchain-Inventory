@@ -208,7 +208,7 @@
     background-color: #1e293b; /* slate-800 */
 }
 .dark .product-card-placeholder i {
-    color: #334155; /* slate-700 */
+    color: #334155; /* slate-7G00 */
 }
 .dark .product-card:hover {
     border-color: #4338ca; /* indigo-700 */
@@ -301,4 +301,6 @@
 .dark .legend-percentage {
     color: #e2e8f0; /* slate-200 */
 }
+
+/* vvv REMOVED SCROLLBAR STYLES vvv */
 /* --- END: Dark Mode for HTML Legend --- */
