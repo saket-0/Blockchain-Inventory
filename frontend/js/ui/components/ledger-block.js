@@ -22,13 +22,19 @@ export const createLedgerBlockElement = (block) => {
 
     const actorHtml = `<li>User: <strong>${adminUserName || userName || 'N/A'}</strong> (${adminEmployeeId || employeeId || 'N/A'})</li>`;
     
+    // vvv HELPER FOR FORMATTING vvv
+    const formatPrice = (p) => (p || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // ^^^ END HELPER ^^^
+    
     switch (txType) {
         case 'CREATE_ITEM':
             transactionHtml = `<span class="font-semibold text-green-700">CREATE</span> <strong>${quantity}</strong> of <strong>${itemName}</strong> (${itemSku}) to <strong>${toLocation}</strong>`;
+            // vvv MODIFIED THIS BLOCK vvv
             detailsHtml = `${actorHtml}
-                           <li>Price: <strong>₹${(price || 0).toFixed(2)}</strong></li>
+                           <li>Price: <strong>₹${formatPrice(price)}</strong></li>
                            <li>Category: <strong>${category || 'N/A'}</strong></li>
-                           <li>Image: <strong>${imageUrl ? 'Provided' : 'None'}</strong></li>`; // <-- ADDED
+                           <li>Image: <strong>${imageUrl ? 'Provided' : 'None'}</strong></li>`;
+            // ^^^ END MODIFICATION ^^^
             break;
         case 'MOVE':
             transactionHtml = `<span class="font-semibold text-blue-600">MOVE</span> <strong>${quantity}</strong> of <strong>${itemSku}</strong>`;
@@ -52,17 +58,17 @@ export const createLedgerBlockElement = (block) => {
             if (newName !== oldName) {
                 detailsHtml += `<li>Name: ${oldName} → <strong>${newName}</strong></li>`;
             }
+            // vvv MODIFIED THIS BLOCK vvv
             if (newPrice !== oldPrice) {
-                detailsHtml += `<li>Price: ₹${(oldPrice || 0).toFixed(2)} → <strong>₹${(newPrice || 0).toFixed(2)}</strong></li>`;
+                detailsHtml += `<li>Price: ₹${formatPrice(oldPrice)} → <strong>₹${formatPrice(newPrice)}</strong></li>`;
             }
+            // ^^^ END MODIFICATION ^^^
             if (newCategory !== oldCategory) {
                 detailsHtml += `<li>Category: ${oldCategory} → <strong>${newCategory}</strong></li>`;
             }
-            // vvv ADDED THIS BLOCK vvv
             if (newImageUrl !== oldImageUrl) {
                 detailsHtml += `<li>Image URL: ${oldImageUrl ? 'Set' : 'None'} → <strong>${newImageUrl ? 'Set' : 'None'}</strong></li>`;
             }
-            // ^^^ END BLOCK ^^^
             detailsHtml += actorHtml;
             break;
         

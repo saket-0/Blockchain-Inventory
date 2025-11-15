@@ -8,34 +8,32 @@ export const renderSnapshotView = (snapshotData) => {
     const { kpis, inventory: snapshotInventory, snapshotTime } = snapshotData;
 
     appContent.querySelector('#snapshot-time-display').textContent = new Date(snapshotTime).toLocaleString();
-    appContent.querySelector('#kpi-snapshot-total-value').textContent = `₹${kpis.totalValue.toFixed(2)}`;
+    // vvv MODIFIED THIS LINE vvv
+    appContent.querySelector('#kpi-snapshot-total-value').textContent = `₹${kpis.totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    // ^^^ END MODIFICATION ^^^
     appContent.querySelector('#kpi-snapshot-total-units').textContent = kpis.totalUnits;
     appContent.querySelector('#kpi-snapshot-transactions').textContent = kpis.transactionCount;
 
     const productGrid = appContent.querySelector('#snapshot-product-grid');
     productGrid.innerHTML = '';
 
-    // vvv MODIFIED THIS LINE (added .reverse()) vvv
     const inventoryMap = new Map(snapshotInventory.reverse());
-    // ^^^ END MODIFICATION ^^^
     
     if (inventoryMap.size === 0) {
         productGrid.innerHTML = `<p class="text-slate-500 lg:col-span-4">No products existed in the system at this time.</p>`;
         return;
     }
 
-    // vvv MODIFIED TO ITERATE THE MAP vvv
     inventoryMap.forEach((product, productId) => {
         if (product.is_deleted) return;
 
         const productCard = document.createElement('div');
-        productCard.className = 'product-card'; // Removed opacity-80
+        productCard.className = 'product-card'; 
 
         const locationsMap = new Map(product.locations);
         let totalStock = 0;
         locationsMap.forEach(qty => totalStock += qty);
 
-        // vvv MODIFIED HTML STRUCTURE (Copied from product-list.js) vvv
         const imageUrl = product.imageUrl || '';
 
         productCard.innerHTML = `
@@ -56,15 +54,14 @@ export const renderSnapshotView = (snapshotData) => {
                 
                 <div class="flex justify-between items-center text-sm font-semibold mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <span class="text-slate-600">Price (at time):</span>
-                    <span>₹${(product.price || 0).toFixed(2)}</span>
-                </div>
+                    <span>₹${(product.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
                 <div class="flex justify-between items-center text-sm font-semibold mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <span class="text-slate-600">Total Stock (at time):</span>
                     <span>${totalStock} units</span>
                 </div>
             </div>
         `;
-        // ^^^ END MODIFICATION ^^^
         productGrid.appendChild(productCard);
     });
 };

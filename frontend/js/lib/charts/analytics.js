@@ -73,12 +73,14 @@ const renderHighValueList = (highValueItems) => {
     }
     
     highValueItems.forEach(item => {
+        // vvv MODIFIED THIS BLOCK vvv
         container.innerHTML += `
             <div class="flex justify-between items-center clickable-stat-item" data-product-id="${item.sku}">
                 <span class="truncate" title="${item.name} (${item.sku})">${item.name}</span>
-                <span class="font-semibold text-indigo-600">₹${item.value.toFixed(2)}</span>
+                <span class="font-semibold text-indigo-600">₹${item.value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
         `;
+        // ^^^ END MODIFICATION ^^^
     });
 };
 
@@ -222,7 +224,25 @@ const renderInventoryDistributionChart = () => {
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top' } }
+            plugins: { 
+                legend: { position: 'top' },
+                // vvv MODIFIED TOOLTIP vvv
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += `₹${context.parsed.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+                // ^^^ END MODIFICATION ^^^
+            }
         }
     });
     addChart(pieChart);
@@ -297,7 +317,25 @@ const renderInventoryCategoryChart = () => {
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top' } }
+            plugins: { 
+                legend: { position: 'top' },
+                // vvv MODIFIED TOOLTIP vvv
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += `₹${context.parsed.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+                // ^^^ END MODIFICATION ^^^
+            }
         }
     });
     addChart(categoryChart);
@@ -352,13 +390,31 @@ const renderTxMixLineChart = (data, labels) => {
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top' } },
+            plugins: { 
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y} units`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
             scales: { 
                 y: { 
-                    beginAtZero: true
-                    // vvv MODIFICATION vvv
-                    // Removed stepSize: 1, as this chart now shows quantity, not count
-                    // ^^^ END MODIFICATION ^^^
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return `${value} units`;
+                        }
+                    }
                 } 
             }
         }
@@ -440,14 +496,34 @@ const renderStockValueChart = (data, labels) => {
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top' } },
+            plugins: { 
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                // vvv MODIFIED THIS LINE vvv
+                                label += `₹${context.parsed.y.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                // ^^^ END MODIFICATION ^^^
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
             scales: { 
                 y: { 
                     beginAtZero: true,
                     ticks: {
                         // Format as currency
                         callback: function(value, index, values) {
-                            return '₹' + value.toLocaleString();
+                            // vvv MODIFIED THIS LINE vvv
+                            return '₹' + value.toLocaleString('en-IN');
+                            // ^^^ END MODIFICATION ^^^
                         }
                     }
                 } 

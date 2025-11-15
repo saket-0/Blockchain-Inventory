@@ -105,7 +105,9 @@ export const renderProductDetail = (productId, navigateTo) => { // Accept naviga
     sharedIdInput.value = productId;
 
     const price = product.price || 0;
-    displayPrice.textContent = `₹${price.toFixed(2)}`;
+    // vvv MODIFIED THIS LINE vvv
+    displayPrice.textContent = `₹${price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    // ^^^ END MODIFICATION ^^^
     displayCategory.textContent = product.category || 'Uncategorized';
 
     // Populate Stock Update Forms
@@ -141,7 +143,7 @@ export const renderProductDetail = (productId, navigateTo) => { // Accept naviga
     // Populate Edit Form
     if (editButton) {
         editNameInput.value = product.productName;
-        editPriceInput.value = price.toFixed(2);
+        editPriceInput.value = price.toFixed(2); // .toFixed() is fine for an input field
         populateCategoryDropdown(editCategorySelect);
         editCategorySelect.value = product.category || 'Uncategorized';
         editImageUrlInput.value = imageUrl; // <-- ADDED

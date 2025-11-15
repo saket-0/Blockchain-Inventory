@@ -21,7 +21,9 @@ export const renderDashboard = async () => {
         totalValue += (product.price || 0) * totalStock;
     });
 
-    appContent.querySelector('#kpi-total-value').textContent = `₹${totalValue.toFixed(2)}`;
+    // vvv MODIFIED THIS LINE vvv
+    appContent.querySelector('#kpi-total-value').textContent = `₹${totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    // ^^^ END MODIFICATION ^^^
     appContent.querySelector('#kpi-total-units').textContent = totalUnits;
     appContent.querySelector('#kpi-total-skus').textContent = activeSkuCount; // <-- ADDED
     appContent.querySelector('#kpi-transactions').textContent = blockchain.length;

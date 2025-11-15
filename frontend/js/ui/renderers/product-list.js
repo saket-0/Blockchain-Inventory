@@ -80,10 +80,9 @@ export const renderProductList = () => {
         let totalStock = 0;
         product.locations.forEach(qty => totalStock += qty);
 
-        // vvv MODIFIED to include image vvv
         const imageUrl = product.imageUrl || '';
 
-        // This is the new HTML structure for the card
+        // vvv MODIFIED HTML vvv
         productCard.innerHTML = `
             ${imageUrl ? 
                 `<img src="${imageUrl}" alt="${product.productName}" class="product-card-image" onerror="this.style.display='none'; this.parentElement.querySelector('.product-card-placeholder').style.display='flex';">` : 
@@ -94,11 +93,16 @@ export const renderProductList = () => {
             </div>
             
             <div class="product-card-content">
-                <div class="flex-1"> <p class="text-xs font-medium text-indigo-600 mb-1">${product.category || 'Uncategorized'}</p>
+                <div class="flex-1">
+                    <p class="text-xs font-medium text-indigo-600 mb-1">${product.category || 'Uncategorized'}</p>
                     <h3 class="font-semibold text-base text-slate-800 truncate" title="${product.productName}">${product.productName}</h3>
                     <p class="text-xs text-slate-500 mb-2">${productId}</p>
                 </div>
                 
+                <div class="flex justify-between items-center text-sm font-semibold mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span class="text-slate-600">Price:</span>
+                    <span>₹${(product.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
                 <div class="flex justify-between items-center text-sm font-semibold mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <span class="text-slate-600">Total Stock:</span>
                     <span>${totalStock} units</span>
