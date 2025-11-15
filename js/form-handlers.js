@@ -527,6 +527,31 @@ const handleAddLocation = async (form) => {
     } catch (error) { showError(error.message); }
 };
 
+// --- NEW FUNCTION: Restore Location ---
+const handleRestoreLocation = async (name) => {
+    if (!name) return showError("Location name is missing.");
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/locations`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ name: name })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        
+        showSuccess(`Location "${data.name}" restored.`);
+
+        // *** ADDED: Log to blockchain (to trigger SSE refresh) ***
+        await logAdminActionToBlockchain({
+            txType: "ADMIN_ADD_LOCATION", // Same txType as add
+            targetId: data.id,
+            targetName: data.name
+        });
+        
+        // (SSE will handle UI refresh)
+    } catch (error) { showError(error.message); }
+};
+
 // *** MODIFIED: To accept element and log to chain ***
 const handleRenameLocation = async (inputElement) => {
     const id = inputElement.dataset.id;
@@ -624,6 +649,31 @@ const handleAddCategory = async (form) => {
         // *** ADDED: Log to blockchain ***
         await logAdminActionToBlockchain({
             txType: "ADMIN_ADD_CATEGORY",
+            targetId: data.id,
+            targetName: data.name
+        });
+
+        // (SSE will handle UI refresh)
+    } catch (error) { showError(error.message); }
+};
+
+// --- NEW FUNCTION: Restore Category ---
+const handleRestoreCategory = async (name) => {
+    if (!name) return showError("Category name is missing.");
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', body: JSON.stringify({ name: name })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        
+        showSuccess(`Category "${data.name}" restored.`);
+        
+        // *** ADDED: Log to blockchain (to trigger SSE refresh) ***
+        await logAdminActionToBlockchain({
+            txType: "ADMIN_ADD_CATEGORY", // Same txType as add
             targetId: data.id,
             targetName: data.name
         });

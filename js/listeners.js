@@ -1,6 +1,7 @@
 // js/listeners.js
 
 function initAppListeners() {
+    
     // --- Theme Toggle Listener ---
     const themeToggleButton = document.getElementById('theme-toggle-button');
     if (themeToggleButton) {
@@ -223,10 +224,26 @@ function initAppListeners() {
         if (locArchive) {
             await handleArchiveLocation(locArchive.dataset.id, locArchive.dataset.name);
         }
+        
+        // --- NEW: Handle Location Restore ---
+        const locRestore = e.target.closest('.location-restore-button');
+        if (locRestore) {
+            await handleRestoreLocation(locRestore.dataset.name);
+        }
+        // --- END NEW ---
+
         const catArchive = e.target.closest('.category-archive-button');
         if (catArchive) {
             await handleArchiveCategory(catArchive.dataset.id, catArchive.dataset.name);
         }
+
+        // --- NEW: Handle Category Restore ---
+        const catRestore = e.target.closest('.category-restore-button');
+        if (catRestore) {
+            await handleRestoreCategory(catRestore.dataset.name);
+        }
+        // --- END NEW ---
+        
         const deleteButton = e.target.closest('.user-delete-button');
         if (deleteButton) {
             const userId = deleteButton.dataset.userId;
