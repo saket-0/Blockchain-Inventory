@@ -1,4 +1,4 @@
-// js/sse.js
+// frontend/js/services/sse.js
 
 // --- ** NEW: SSE HELPER FUNCTIONS ** ---
     
@@ -6,26 +6,27 @@
  * Establishes the Server-Sent Events (SSE) connection.
  */
 const startSSEConnection = () => {
-    if (sseConnection) {
-        sseConnection.close();
+    // *** MODIFIED: Use AppState object ***
+    if (AppState.sseConnection) {
+        AppState.sseConnection.close();
     }
 
     // Use the API_BASE_URL from config.js
     // The { withCredentials: true } is vital for sending the session cookie
-    sseConnection = new EventSource(`${API_BASE_URL}/api/events`, { withCredentials: true });
+    AppState.sseConnection = new EventSource(`${API_BASE_URL}/api/events`, { withCredentials: true });
 
-    sseConnection.onopen = () => {
+    AppState.sseConnection.onopen = () => {
         console.log('SSE Connection Established.');
     };
 
-    sseConnection.onerror = (error) => {
+    AppState.sseConnection.onerror = (error) => {
         console.error('SSE Error:', error);
         // This can happen on server restart or network loss.
         // EventSource will automatically try to reconnect.
     };
 
     // Listen for our custom 'new-block' event from the server
-    sseConnection.addEventListener('new-block', (event) => {
+    AppState.sseConnection.addEventListener('new-block', (event) => {
         const newBlock = JSON.parse(event.data);
 
         // Double-check we don't already have this block
@@ -55,7 +56,7 @@ const startSSEConnection = () => {
     });
     
     // This is the confirmation event we added in server.js
-    sseConnection.addEventListener('connected', (event) => {
+    AppState.sseConnection.addEventListener('connected', (event) => {
         console.log('SSE: Server confirmed connection.');
     });
 };
@@ -64,9 +65,11 @@ const startSSEConnection = () => {
  * Intelligently refreshes only the current view based on the new block.
  */
 const refreshCurrentView = (newBlock) => {
-    // We use the 'currentViewId' variable we set in navigateTo
-    console.log(`SSE: Refreshing current view: ${currentViewId}`);
-    switch (currentViewId) {
+    // *** MODIFIED: Use AppState object ***
+    const viewId = AppState.currentViewId;
+    
+    console.log(`SSE: Refreshing current view: ${viewId}`);
+    switch (viewId) {
         case 'dashboard':
             renderDashboard();
             break;

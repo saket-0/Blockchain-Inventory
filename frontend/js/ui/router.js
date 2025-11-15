@@ -1,19 +1,28 @@
-// js/router.js
+// frontend/js/ui/router.js
 
 // --- NAVIGATION & UI CONTROL ---
 const showLogin = () => {
-    loginOverlay.style.display = 'flex';
-    appWrapper.classList.add('hidden');
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('app-wrapper').classList.add('hidden');
 };
 
 const showApp = async () => {
-    loginOverlay.style.display = 'none';
-    appWrapper.classList.remove('hidden');
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('app-wrapper').classList.remove('hidden');
     
     const user = currentUser;
     document.getElementById('user-name').textContent = user.name;
     document.getElementById('user-role').textContent = user.role;
     document.getElementById('user-employee-id').textContent = user.employee_id;
+
+    // Get nav links just-in-time
+    const navLinks = {
+        admin: document.getElementById('nav-admin'),
+        ledger: document.getElementById('nav-ledger'),
+        anomaly: document.getElementById('nav-anomaly'),
+        analytics: document.getElementById('nav-analytics'),
+        profile: document.getElementById('nav-profile'),
+    };
 
     navLinks.admin.style.display = permissionService.can('VIEW_ADMIN_PANEL') ? 'flex' : 'none';
     navLinks.ledger.style.display = permissionService.can('VIEW_LEDGER') ? 'flex' : 'none';
@@ -24,9 +33,8 @@ const showApp = async () => {
     await loadBlockchain();
     rebuildInventoryState();
     
-    // --- ** NEW: Start SSE Connection ** ---
+    // Start SSE Connection (function is in sse.js)
     startSSEConnection();
-    // --- ** END NEW ** ---
     
     navigateTo('dashboard');
 };
@@ -57,8 +65,21 @@ const loadView = async (viewName) => {
 const navigateTo = async (view, context = {}) => {
     // 1. Clear state
     destroyCurrentCharts();
-    appContent.innerHTML = ''; // Clear content
-    Object.values(navLinks).forEach(link => link.classList.remove('active'));
+    const appContent = document.getElementById('app-content');
+    if (appContent) {
+        appContent.innerHTML = ''; // Clear content
+    }
+    
+    const navLinks = {
+        dashboard: document.getElementById('nav-dashboard'),
+        products: document.getElementById('nav-products'),
+        analytics: document.getElementById('nav-analytics'),
+        anomaly: document.getElementById('nav-anomaly'),
+        admin: document.getElementById('nav-admin'),
+        ledger: document.getElementById('nav-ledger'),
+        profile: document.getElementById('nav-profile'),
+    };
+    Object.values(navLinks).forEach(link => link && link.classList.remove('active'));
 
     // 2. Define all views, their files, render functions, and permissions
     const viewMap = {
@@ -76,14 +97,14 @@ const navigateTo = async (view, context = {}) => {
     // 3. Get the configuration for the requested view, or default to dashboard
     let viewConfig = viewMap[view] || viewMap.dashboard;
     
-    // *** NEW: Track the current view ***
-    currentViewId = view; 
+    // *** MODIFIED: Use AppState object ***
+    AppState.currentViewId = view; 
 
     // 4. Check permissions
     if (viewConfig.permission && !permissionService.can(viewConfig.permission)) {
         showError("Access Denied.");
-        // *** MODIFIED: Set currentViewId before recursive call ***
-        currentViewId = 'dashboard';
+        // *** MODIFIED: Use AppState object ***
+        AppState.currentViewId = 'dashboard';
         return navigateTo('dashboard'); // Redirect to dashboard
     }
 
@@ -94,7 +115,9 @@ const navigateTo = async (view, context = {}) => {
 
     // 6. Fetch and inject the HTML
     const htmlContent = await loadView(viewConfig.file);
-    appContent.innerHTML = htmlContent;
+    if (appContent) {
+        appContent.innerHTML = htmlContent;
+    }
 
     // 7. Call the corresponding render function *after* HTML is in the DOM
     try {

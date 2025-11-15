@@ -8,11 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="styles.css"> -->
+    
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/dark-theme.css">
+    
     <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -133,25 +134,21 @@
         <span id="success-message"></span>
     </div>
 
-    <!-- <script src="config.js"></script>
-    <script src="core.js"></script>
-    <script src="js/ui-utils.js"></script>
-    <script src="js/chart-renderer.js"></script>
-    <script src="js/view-renderer.js"></script>
-    <script src="js/anomaly-renderer.js"></script>
-    <script src="js/form-handlers.js"></script>
-    <script src="app.js" defer></script> -->
-
     <script src="config.js"></script>
-    <script src="core.js"></script>
+    <script src="js/app-state.js"></script> <script src="js/core.js"></script>
     
-    <script src="js/ui-utils.js"></script>
-    <script src="js/chart-renderer.js"></script>
-    <script src="js/view-renderer.js"></script>
-    <script src="js/anomaly-renderer.js"></script>
-    <script src="js/form-handlers.js"></script>
+    <script src="js/ui/ui-utils.js"></script>
+    <script src="js/lib/chart-renderer.js"></script>
+    <script src="js/ui/view-renderer.js"></script>
+    <script src="js/ui/anomaly-renderer.js"></script>
+    <script src="js/handlers/form-handlers.js"></script>
 
-    <script src="js/ui-elements.js"></script> <script src="js/theme.js"></script>         <script src="js/router.js"></script>        <script src="js/sse.js"></script>           <script src="js/listeners.js"></script>     <script src="app.js" defer></script>
+    <script src="js/lib/theme.js"></script>
+    <script src="js/ui/router.js"></script>
+    <script src="js/services/sse.js"></script>
+    <script src="js/ui/listeners.js"></script>
+    
+    <script src="app.js" defer></script>
 
 </body>
 </html>
