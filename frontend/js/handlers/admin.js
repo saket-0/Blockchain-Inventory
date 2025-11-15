@@ -30,6 +30,7 @@ const logAdminActionToBlockchain = async (transaction) => {
 
 // --- User Management Handlers ---
 
+// (No changes to User Management Handlers)
 export const handleRoleChange = async (userId, userName, newRole) => {
     if (!permissionService.can('MANAGE_USERS')) return showError("Access Denied.");
     try {
@@ -198,6 +199,11 @@ export const handleAddLocation = async (form) => {
             targetId: data.id,
             targetName: data.name
         });
+
+        // *** FIX ***
+        await renderAdminPanel(); 
+        // *** END FIX ***
+
     } catch (error) { showError(error.message); }
 };
 
@@ -219,6 +225,11 @@ export const handleRestoreLocation = async (name) => {
             targetId: data.id,
             targetName: data.name
         });
+
+        // *** FIX ***
+        await renderAdminPanel();
+        // *** END FIX ***
+
     } catch (error) { showError(error.message); }
 };
 
@@ -251,10 +262,14 @@ export const handleRenameLocation = async (inputElement) => {
             oldName: oldName,
             newName: data.name
         });
+        
+        // No explicit render needed here, as the SSE will handle it
+        // and the input value is already updated.
+
     } catch (error) { 
         showError(error.message); 
         inputElement.value = oldName;
-        renderAdminPanel(); 
+        renderAdminPanel(); // This one was already here (on error)
     }
 };
 
@@ -283,6 +298,11 @@ export const handleArchiveLocation = async (id, name) => {
             targetId: id,
             targetName: name
         });
+
+        // *** FIX ***
+        await renderAdminPanel();
+        // *** END FIX ***
+
     } catch (error) { showError(error.message); }
 };
 
@@ -309,6 +329,11 @@ export const handleAddCategory = async (form) => {
             targetId: data.id,
             targetName: data.name
         });
+
+        // *** FIX ***
+        await renderAdminPanel();
+        // *** END FIX ***
+
     } catch (error) { showError(error.message); }
 };
 
@@ -330,6 +355,11 @@ export const handleRestoreCategory = async (name) => {
             targetId: data.id,
             targetName: data.name
         });
+
+        // *** FIX ***
+        await renderAdminPanel();
+        // *** END FIX ***
+
     } catch (error) { showError(error.message); }
 };
 
@@ -365,7 +395,7 @@ export const handleRenameCategory = async (inputElement) => {
     } catch (error) { 
         showError(error.message); 
         inputElement.value = oldName;
-        renderAdminPanel(); 
+        renderAdminPanel(); // This one was already here (on error)
     }
 };
 
@@ -394,5 +424,10 @@ export const handleArchiveCategory = async (id, name) => {
             targetId: id,
             targetName: name
         });
+
+        // *** FIX ***
+        await renderAdminPanel();
+        // *** END FIX ***
+
     } catch (error) { showError(error.message); }
 };
