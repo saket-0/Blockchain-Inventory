@@ -24,27 +24,18 @@
              <h2 class="text-2xl font-semibold mb-4 text-slate-800">Stock Value Flow (Last 7 Days)</h2>
             <canvas id="stock-value-chart"></canvas>
         </div>
-        </div>
+    </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        <div class="space-y-8">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-semibold mb-4 text-slate-800">Inventory Value by Location</h2>
-                <div class="max-w-xs mx-auto">
-                    <canvas id="inventory-distribution-chart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                 <h2 class="text-2xl font-semibold mb-4 text-slate-800">Inventory Value by Category</h2>
-                 <div class="max-w-xs mx-auto">
-                    <canvas id="inventory-category-chart"></canvas>
-                 </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-slate-800">Inventory Value by Location</h2>
+            <div class="max-w-xs mx-auto">
+                <canvas id="inventory-distribution-chart"></canvas>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="bg-white p-6 rounded-lg shadow-md lg:row-span-2">
              <h2 class="text-2xl font-semibold mb-4 text-slate-800">Key Inventory Stats</h2>
              <div class="space-y-6">
                 <div>
@@ -71,8 +62,15 @@
                         <p class="text-slate-500">Loading...</p>
                     </div>
                 </div>
-                </div>
+            </div>
         </div>
-    </div>
 
-</div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+             <h2 class="text-2xl font-semibold mb-4 text-slate-800">Inventory Value by Category</h2>
+             <div class="max-w-xs mx-auto">
+                <canvas id="inventory-category-chart"></canvas>
+             </div>
+        </div>
+
+    </div>
+    </div>
