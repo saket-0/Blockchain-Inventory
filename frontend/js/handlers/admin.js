@@ -4,6 +4,7 @@ import { permissionService } from '../services/permissions.js';
 import { showError, showSuccess } from '../ui/components/notifications.js';
 import { populateLoginDropdown } from '../ui/components/dropdowns.js';
 import { renderAdminPanel } from '../ui/renderers/admin.js';
+import { confirmAction } from '../ui/components/confirm-modal.js'; // <-- ADDED IMPORT
 
 /**
  * Helper function to log admin-only (non-inventory) actions to the blockchain.
@@ -30,7 +31,6 @@ const logAdminActionToBlockchain = async (transaction) => {
 
 // --- User Management Handlers ---
 
-// (No changes to User Management Handlers)
 export const handleRoleChange = async (userId, userName, newRole) => {
     if (!permissionService.can('MANAGE_USERS')) return showError("Access Denied.");
     try {
@@ -146,9 +146,18 @@ export const handleAddUser = async (form) => {
 export const handleDeleteUser = async (userId, userName, userEmail) => {
     if (!permissionService.can('MANAGE_USERS')) return showError("Access Denied.");
 
-    if (!confirm(`Are you sure you want to permanently delete ${userName} (${userEmail})?\n\nThis action is irreversible and will be logged to the blockchain.`)) {
+    // vvv MODIFIED BLOCK vvv
+    const confirmed = await confirmAction({
+        title: 'Confirm User Deletion',
+        body: `Are you sure you want to permanently delete ${userName} (${userEmail})?\n\nThis action is irreversible and will be logged to the blockchain.`,
+        confirmText: 'Delete User',
+        isDanger: true
+    });
+
+    if (!confirmed) {
         return;
     }
+    // ^^^ END MODIFIED BLOCK ^^^
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
@@ -199,11 +208,10 @@ export const handleAddLocation = async (form) => {
             targetId: data.id,
             targetName: data.name
         });
-
-        // *** FIX ***
-        await renderAdminPanel(); 
+        
+        // *** BUG FIX ***
+        await renderAdminPanel();
         // *** END FIX ***
-
     } catch (error) { showError(error.message); }
 };
 
@@ -226,10 +234,9 @@ export const handleRestoreLocation = async (name) => {
             targetName: data.name
         });
 
-        // *** FIX ***
+        // *** BUG FIX ***
         await renderAdminPanel();
         // *** END FIX ***
-
     } catch (error) { showError(error.message); }
 };
 
@@ -262,19 +269,27 @@ export const handleRenameLocation = async (inputElement) => {
             oldName: oldName,
             newName: data.name
         });
-        
-        // No explicit render needed here, as the SSE will handle it
-        // and the input value is already updated.
-
     } catch (error) { 
         showError(error.message); 
         inputElement.value = oldName;
-        renderAdminPanel(); // This one was already here (on error)
+        renderAdminPanel(); 
     }
 };
 
 export const handleArchiveLocation = async (id, name) => {
-    if (!confirm(`Archive or Delete "${name}"?\n\n- If it has history, it will be ARCHIVED.\n- If it has no history, it will be PERMANENTLY DELETED.`)) return;
+    // vvv MODIFIED BLOCK vvv
+    const confirmed = await confirmAction({
+        title: 'Confirm Archive/Delete',
+        body: `Archive or Delete "${name}"?\n\n- If it has history, it will be ARCHIVED.\n- If it has no history, it will be PERMANENTLY DELETED.`,
+        confirmText: 'Confirm',
+        isDanger: true
+    });
+
+    if (!confirmed) {
+        return;
+    }
+    // ^^^ END MODIFIED BLOCK ^^^
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/locations/${id}`, {
             method: 'DELETE', credentials: 'include'
@@ -298,11 +313,10 @@ export const handleArchiveLocation = async (id, name) => {
             targetId: id,
             targetName: name
         });
-
-        // *** FIX ***
+        
+        // *** BUG FIX ***
         await renderAdminPanel();
         // *** END FIX ***
-
     } catch (error) { showError(error.message); }
 };
 
@@ -330,10 +344,9 @@ export const handleAddCategory = async (form) => {
             targetName: data.name
         });
 
-        // *** FIX ***
+        // *** BUG FIX ***
         await renderAdminPanel();
         // *** END FIX ***
-
     } catch (error) { showError(error.message); }
 };
 
@@ -356,10 +369,9 @@ export const handleRestoreCategory = async (name) => {
             targetName: data.name
         });
 
-        // *** FIX ***
+        // *** BUG FIX ***
         await renderAdminPanel();
         // *** END FIX ***
-
     } catch (error) { showError(error.message); }
 };
 
@@ -395,12 +407,24 @@ export const handleRenameCategory = async (inputElement) => {
     } catch (error) { 
         showError(error.message); 
         inputElement.value = oldName;
-        renderAdminPanel(); // This one was already here (on error)
+        renderAdminPanel(); 
     }
 };
 
 export const handleArchiveCategory = async (id, name) => {
-    if (!confirm(`Archive or Delete "${name}"?\n\n- If it has history, it will be ARCHIVED.\n- If it has no history, it will be PERMANENTLY DELETED.`)) return;
+    // vvv MODIFIED BLOCK vvv
+    const confirmed = await confirmAction({
+        title: 'Confirm Archive/Delete',
+        body: `Archive or Delete "${name}"?\n\n- If it has history, it will be ARCHIVED.\n- If it has no history, it will be PERMANENTLY DELETED.`,
+        confirmText: 'Confirm',
+        isDanger: true
+    });
+
+    if (!confirmed) {
+        return;
+    }
+    // ^^^ END MODIFIED BLOCK ^^^
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
             method: 'DELETE', credentials: 'include'
@@ -424,10 +448,9 @@ export const handleArchiveCategory = async (id, name) => {
             targetId: id,
             targetName: name
         });
-
-        // *** FIX ***
+        
+        // *** BUG FIX ***
         await renderAdminPanel();
         // *** END FIX ***
-
     } catch (error) { showError(error.message); }
 };

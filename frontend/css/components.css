@@ -146,3 +146,9 @@
     opacity: 0;
 }
 /* --- END: Image Cropper Modal Styles --- */
+
+/* --- NEW: Confirm Modal Styles --- */
+#confirm-modal-body {
+    white-space: pre-line; /* Renders \n as line breaks */
+}
+/* --- END: Confirm Modal Styles --- */

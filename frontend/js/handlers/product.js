@@ -5,6 +5,7 @@ import { addTransactionToChain, processTransaction, rebuildInventoryState } from
 import { generateUniqueSku } from '../utils/product.js';
 import { showError, showSuccess } from '../ui/components/notifications.js';
 import { renderProductDetail } from '../ui/renderers/product-detail.js';
+import { confirmAction } from '../ui/components/confirm-modal.js'; // <-- ADDED IMPORT
 
 export const handleAddItem = async (form) => {
     if (!permissionService.can('CREATE_ITEM')) return showError("Access Denied.");
@@ -186,9 +187,18 @@ export const handleEditProduct = async (form) => {
 export const handleDeleteProduct = async (productId, productName) => {
     if (!permissionService.can('DELETE_ITEM')) return showError("Access Denied.");
 
-    if (!confirm(`Are you sure you want to delete "${productName}" (${productId})?\n\nThis action can only be done if stock is 0 and will be permanently recorded.`)) {
+    // vvv MODIFIED BLOCK vvv
+    const confirmed = await confirmAction({
+        title: 'Confirm Product Deletion',
+        body: `Are you sure you want to delete "${productName}" (${productId})?\n\This action can only be done if stock is 0 and will be permanently recorded.`,
+        confirmText: 'Delete Product',
+        isDanger: true
+    });
+
+    if (!confirmed) {
         return;
     }
+    // ^^^ END MODIFIED BLOCK ^^^
 
     const transaction = {
         txType: "DELETE_ITEM",

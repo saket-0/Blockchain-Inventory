@@ -4,10 +4,21 @@ import { permissionService } from '../services/permissions.js';
 import { setBlockchain, inventory } from '../app-state.js';
 import { rebuildInventoryState } from '../services/blockchain.js';
 import { showError, showSuccess } from '../ui/components/notifications.js';
+import { confirmAction } from '../ui/components/confirm-modal.js'; // <-- ADDED IMPORT
 
 export const handleClearDb = async (navigateTo) => {
     if (!permissionService.can('CLEAR_DB')) return showError("Access Denied.");
-    if (confirm('Are you sure you want to clear the entire blockchain? This cannot be undone.')) {
+    
+    // vvv MODIFIED BLOCK vvv
+    const confirmed = await confirmAction({
+        title: 'Confirm Clear Blockchain',
+        body: 'Are you sure you want to clear the entire blockchain?\n\nThis action cannot be undone.',
+        confirmText: 'Clear Blockchain',
+        isDanger: true
+    });
+
+    if (confirmed) {
+    // ^^^ END MODIFIED BLOCK ^^^
         try {
             const response = await fetch(`${API_BASE_URL}/api/blockchain`, {
                 method: 'DELETE',
