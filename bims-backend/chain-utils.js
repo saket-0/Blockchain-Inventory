@@ -162,20 +162,48 @@ function validateTransaction(transaction, currentChain) {
  * @param {string} targetTimestampISO - An ISO string of the time to stop at.
  * @returns {object} An object containing { inventory, transactionCount }
  */
+// function rebuildStateAt(blockchainArray, targetTimestampISO) {
+//     const inventory = new Map();
+//     let transactionCount = 0;
+//     const targetDate = new Date(targetTimestampISO);
+
+//     // Start at 1 to skip the Genesis block
+//     for (let i = 1; i < blockchainArray.length; i++) {
+//         const block = blockchainArray[i];
+//         const blockDate = new Date(block.timestamp);
+
+//         // If the block's timestamp is *after* our target, stop processing.
+//         const targetTime = targetDate.getTime();
+//         const blockTime = blockDate.getTime();
+//         if (blockDate > targetDate) {
+//             break; // This is the "time-travel" part
+//         }
+
+//         // This block is at or before our target time, process it.
+//         if (block && block.transaction) {
+//             // Use the existing processTransaction logic in "muted" mode
+//             processTransaction(block.transaction, inventory, true, null);
+//             transactionCount++;
+//         }
+//     }
+
+//     return { inventory, transactionCount };
+// }
+
 function rebuildStateAt(blockchainArray, targetTimestampISO) {
     const inventory = new Map();
     let transactionCount = 0;
     const targetDate = new Date(targetTimestampISO);
+    const targetTime = targetDate.getTime();
 
     // Start at 1 to skip the Genesis block
     for (let i = 1; i < blockchainArray.length; i++) {
         const block = blockchainArray[i];
         const blockDate = new Date(block.timestamp);
+        const blockTime = blockDate.getTime();
 
         // If the block's timestamp is *after* our target, stop processing.
-        const targetTime = targetDate.getTime();
-        const blockTime = blockDate.getTime();
-        if (blockDate > targetDate) {
+        if (blockTime > targetTime) {
             break; // This is the "time-travel" part
         }
 
@@ -189,7 +217,6 @@ function rebuildStateAt(blockchainArray, targetTimestampISO) {
 
     return { inventory, transactionCount };
 }
-
 
 /**
  * This is the core logic from core.js, now running on the server.
