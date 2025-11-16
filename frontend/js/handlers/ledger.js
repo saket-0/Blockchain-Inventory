@@ -72,7 +72,21 @@ export const handleSnapshotForm = async (form, navigateTo) => {
     button.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Generating...';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/blockchain/state-at?timestamp=${timestamp}`, {
+        // CRITICAL FIX: Properly convert local datetime-local to UTC
+        // datetime-local returns "2025-11-16T10:30" in the user's LOCAL timezone
+        // We need to convert this to UTC for the server
+        
+        // Parse as local time
+        const localDate = new Date(timestamp);
+        
+        // Convert to UTC ISO string (this automatically handles timezone conversion)
+        const utcTimestamp = localDate.toISOString();
+        
+        console.log('User selected (local):', timestamp);
+        console.log('Converting to UTC:', utcTimestamp);
+        console.log('User timezone offset (minutes):', localDate.getTimezoneOffset());
+        
+        const response = await fetch(`${API_BASE_URL}/api/blockchain/state-at?timestamp=${encodeURIComponent(utcTimestamp)}`, {
             credentials: 'include'
         });
         

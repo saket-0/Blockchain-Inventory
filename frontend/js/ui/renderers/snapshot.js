@@ -7,7 +7,19 @@ export const renderSnapshotView = (snapshotData) => {
     
     const { kpis, inventory: snapshotInventory, snapshotTime } = snapshotData;
 
-    appContent.querySelector('#snapshot-time-display').textContent = new Date(snapshotTime).toLocaleString();
+    // Display time in user's local timezone for clarity
+    const snapshotDate = new Date(snapshotTime);
+    const localTimeString = snapshotDate.toLocaleString('en-IN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+
+    appContent.querySelector('#snapshot-time-display').textContent = `${localTimeString} (Your Local Time)`;
     appContent.querySelector('#kpi-snapshot-total-value').textContent = `₹${kpis.totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     appContent.querySelector('#kpi-snapshot-total-units').textContent = kpis.totalUnits;
     appContent.querySelector('#kpi-snapshot-transactions').textContent = kpis.transactionCount;
@@ -17,9 +29,7 @@ export const renderSnapshotView = (snapshotData) => {
 
     const inventoryMap = new Map(snapshotInventory.reverse());
     
-    // vvv DEFINE LOW STOCK THRESHOLD vvv
     const LOW_STOCK_THRESHOLD = 10;
-    // ^^^ END DEFINITION ^^^
     
     if (inventoryMap.size === 0) {
         productGrid.innerHTML = `<p class="text-slate-500 lg:col-span-4">No products existed in the system at this time.</p>`;
@@ -38,12 +48,9 @@ export const renderSnapshotView = (snapshotData) => {
 
         const imageUrl = product.imageUrl || '';
 
-        // vvv SET DYNAMIC COLOR CLASSES vvv
         const stockColorClass = totalStock <= LOW_STOCK_THRESHOLD ? 'text-red-600' : 'text-slate-800';
-        const priceColorClass = 'text-indigo-600';
-        // ^^^ END SET ^^^
+        const priceColorClass = 'text-indigo-600 ';
 
-        // vvv MODIFIED HTML STRUCTURE vvv
         productCard.innerHTML = `
             ${imageUrl ? 
                 `<img src="${imageUrl}" alt="${product.productName}" class="product-card-image" onerror="this.style.display='none'; this.parentElement.querySelector('.product-card-placeholder').style.display='flex';">` : 
@@ -70,7 +77,6 @@ export const renderSnapshotView = (snapshotData) => {
                 </div>
             </div>
         `;
-        // ^^^ END MODIFICATION ^^^
         productGrid.appendChild(productCard);
     });
 };

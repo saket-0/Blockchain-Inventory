@@ -162,59 +162,49 @@ function validateTransaction(transaction, currentChain) {
  * @param {string} targetTimestampISO - An ISO string of the time to stop at.
  * @returns {object} An object containing { inventory, transactionCount }
  */
-// function rebuildStateAt(blockchainArray, targetTimestampISO) {
-//     const inventory = new Map();
-//     let transactionCount = 0;
-//     const targetDate = new Date(targetTimestampISO);
 
-//     // Start at 1 to skip the Genesis block
-//     for (let i = 1; i < blockchainArray.length; i++) {
-//         const block = blockchainArray[i];
-//         const blockDate = new Date(block.timestamp);
-
-//         // If the block's timestamp is *after* our target, stop processing.
-//         const targetTime = targetDate.getTime();
-//         const blockTime = blockDate.getTime();
-//         if (blockDate > targetDate) {
-//             break; // This is the "time-travel" part
-//         }
-
-//         // This block is at or before our target time, process it.
-//         if (block && block.transaction) {
-//             // Use the existing processTransaction logic in "muted" mode
-//             processTransaction(block.transaction, inventory, true, null);
-//             transactionCount++;
-//         }
-//     }
-
-//     return { inventory, transactionCount };
-// }
 
 function rebuildStateAt(blockchainArray, targetTimestampISO) {
     const inventory = new Map();
     let transactionCount = 0;
+    
+    // The frontend now sends proper UTC ISO strings
     const targetDate = new Date(targetTimestampISO);
     const targetTime = targetDate.getTime();
+    
+    console.log(`Time-travel to: ${targetTimestampISO} (epoch: ${targetTime})`);
 
     // Start at 1 to skip the Genesis block
     for (let i = 1; i < blockchainArray.length; i++) {
         const block = blockchainArray[i];
-        const blockDate = new Date(block.timestamp);
+        
+        // Ensure block timestamp is in UTC
+        const blockTimestamp = typeof block.timestamp === 'string' 
+            ? block.timestamp 
+            : new Date(block.timestamp).toISOString();
+            
+        const blockDate = new Date(blockTimestamp);
         const blockTime = blockDate.getTime();
+        
+        // Debug log for first few blocks
+        if (i <= 3) {
+            console.log(`Block ${i}: ${blockTimestamp} (epoch: ${blockTime}), target: ${targetTime}, include: ${blockTime <= targetTime}`);
+        }
 
         // If the block's timestamp is *after* our target, stop processing.
         if (blockTime > targetTime) {
-            break; // This is the "time-travel" part
+            console.log(`Stopped at block ${i} (timestamp after target)`);
+            break;
         }
 
         // This block is at or before our target time, process it.
         if (block && block.transaction) {
-            // Use the existing processTransaction logic in "muted" mode
             processTransaction(block.transaction, inventory, true, null);
             transactionCount++;
         }
     }
-
+    
+    console.log(`Time-travel complete: processed ${transactionCount} transactions`);
     return { inventory, transactionCount };
 }
 
