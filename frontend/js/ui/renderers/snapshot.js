@@ -39,8 +39,8 @@ export const renderSnapshotView = (snapshotData) => {
         const imageUrl = product.imageUrl || '';
 
         // vvv SET DYNAMIC COLOR CLASSES vvv
-        const stockColorClass = totalStock <= LOW_STOCK_THRESHOLD ? 'text-red-600' : 'text-slate-800 dark:text-slate-200';
-        const priceColorClass = 'text-indigo-600 dark:text-indigo-300';
+        const stockColorClass = totalStock <= LOW_STOCK_THRESHOLD ? 'text-red-600' : 'text-slate-800';
+        const priceColorClass = 'text-indigo-600';
         // ^^^ END SET ^^^
 
         // vvv MODIFIED HTML STRUCTURE vvv

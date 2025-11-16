@@ -173,6 +173,8 @@ function rebuildStateAt(blockchainArray, targetTimestampISO) {
         const blockDate = new Date(block.timestamp);
 
         // If the block's timestamp is *after* our target, stop processing.
+        const targetTime = targetDate.getTime();
+        const blockTime = blockDate.getTime();
         if (blockDate > targetDate) {
             break; // This is the "time-travel" part
         }
